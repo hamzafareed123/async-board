@@ -1,0 +1,24 @@
+# Node dependencies
+node_modules/
+
+# Build output
+build/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor/OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+https://github.com/hamzafareed123/async-board
