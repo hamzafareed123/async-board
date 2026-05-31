@@ -3,7 +3,7 @@ import {ENV} from "./config/env"
 import dbConnect from "./config/db"
 import helmet from "helmet";
 import morgan from "morgan";
-
+import authRoute from "./modules/auth/auth-route"
 
 dbConnect();
 const app = express();
@@ -13,9 +13,8 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 app.use(morgan("dev"))
 
-app.get("/",(req,res)=>{
-    res.send("Hello World")
-})
+app.use("/api/auth",authRoute);
+
 
 
 app.listen(ENV.PORT,()=>{
