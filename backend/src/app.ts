@@ -4,6 +4,7 @@ import dbConnect from "./config/db"
 import helmet from "helmet";
 import morgan from "morgan";
 import authRoute from "./modules/auth/auth-route"
+import { OutputHandler } from "./middlewares/outputHandler-middleware";
 
 dbConnect();
 const app = express();
@@ -15,6 +16,18 @@ app.use(morgan("dev"))
 
 app.use("/api/auth",authRoute);
 
+app.use((error: any, req: any, res: any, next: any) => {
+  (res as any).error = error;
+
+  const status =
+    error instanceof Error &&
+    "statusCode" in error &&
+    typeof (error as any).statusCode === "number"
+      ? (error as any).statusCode
+      : 500;
+
+  OutputHandler(status, req, res, next);
+});
 
 
 app.listen(ENV.PORT,()=>{
