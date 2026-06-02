@@ -1,9 +1,11 @@
 import express from "express";
+import { signUpSchema } from "./auth-validator";
+import {signUp} from "./auth-controller";
+import { validateRequest } from "../../middlewares/validation-middleware";
+
 
 const router = express.Router();
 
-router.post("/signup",(req,res)=>{
-    res.send("Signup route")
-})
+router.post("/signup",validateRequest(signUpSchema),signUp)
 
 export default router;
