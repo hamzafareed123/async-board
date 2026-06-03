@@ -1,26 +1,38 @@
+import moongoose from "mongoose";
+
 export interface IUser {
+    _id: moongoose.Types.ObjectId;
     fullName: string;
     email: string;
-    password: string;
     profilePic?: string;
     otp?: string;
     otpExpiry?: Date;
     provider?: string;
     googleId?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-export interface ISignUPDTO{
-    fullName:string;
-    email:string;
-    password:string;
+
+
+export interface ISignUPDTO {
+    fullName: string;
+    email: string;
+    password: string;
 }
 
-export interface ILoginDTO{
-    email:string;
-    password:string;
+export interface ILoginDTO {
+    email: string;
+    password: string;
 }
 
-export interface IAuthResponse{
-    user:IUser;
-    accessToken:string;
+export interface IAuthResponse {
+    user: IUser;
+    accessToken: string;
+}
+
+export interface IRefreshToken {
+    userId: moongoose.Types.ObjectId;
+    token: string;
+    createdAt: Date;
 }

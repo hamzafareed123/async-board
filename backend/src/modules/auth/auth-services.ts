@@ -1,31 +1,50 @@
-import { ISignUPDTO } from "../../types/auth-types";
+import { IAuthResponse, ISignUPDTO } from "../../types/auth-types";
 import { customError } from "../../utils/custom-error";
 import { authRepository } from "./auth-repositories";
 import { ERROR_MESSAGE } from "../../constants/error-message"
 import { STATUS_CODE } from "../../constants/status-codes";
 import bcrypt from "bcrypt";
+import { sendWelcomeEmail } from "../../email/sendWelcomeEmail";
+import { generateToken} from "../../utils/generateToken";
+import {ENV} from "../../config/env";
+
 
 export const authServices = {
-    async signUp(userData: ISignUPDTO) {
-
+    async signUp(userData: ISignUPDTO):Promise<IAuthResponse> {
         const { fullName, email, password } = userData;
 
-        const user = await authRepository.findUserByEmail(email);
+        const existingUser = await authRepository.findUserByEmail(email);
 
-        if (user) {
-
-            throw new customError(ERROR_MESSAGE.USER_ALREADY_EXIST, STATUS_CODE.CONFLICT)
+        if (existingUser) {
+            throw new customError(
+                ERROR_MESSAGE.USER_ALREADY_EXIST,
+                STATUS_CODE.CONFLICT
+            );
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = await authRepository.signUp({
+    
+        const newUser = await authRepository.createUser({
             fullName,
             email,
-            password: hashedPassword
-        })
+            password: hashedPassword,
+        });
 
-        return newUser;
-    }
-}
+        const accessToken = generateToken(
+            newUser._id.toString(),
+            ENV.ACCESS_TOKEN_SECRET_KEY,
+            "15m"
+        )
+
+
+        sendWelcomeEmail(email, fullName).catch((error) => {
+            console.error("Error sending welcome email:", error);
+        });
+
+      return {
+        user:newUser,
+        accessToken
+      }
+    },
+};
