@@ -1,7 +1,22 @@
 import {Schema, model, Document} from "mongoose";
 import {IUser} from "../types/auth-types";
 
-export interface IUserDocument extends IUser,Document{}
+
+export interface IUserDocument extends Document {
+  fullName: string;
+  email: string;
+  password: string;
+  profilePic?: string;
+  role: "user" | "admin";
+  otp?: string;
+  otpExpiry?: Date;
+  provider: "local" | "google";
+  googleId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+
 
 const userSchema = new Schema<IUserDocument>(
   {

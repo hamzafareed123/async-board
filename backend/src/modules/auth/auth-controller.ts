@@ -4,6 +4,8 @@ import { authServices } from "./auth-services";
 import { SUCCESS_MESSAGE } from "../../constants/success-message";
 import { OutputHandler } from "../../middlewares/outputHandler-middleware";
 import { STATUS_CODE } from "../../constants/status-codes";
+import { generateRefreshToken } from "../../utils/generateToken";
+
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -11,8 +13,11 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 
         const newUser = await authServices.signUp(userData);
 
+        const userId = newUser.user._id;
+        await generateRefreshToken(String(userId), res);
+
         (res as any).result = {
-            data: { newUser },
+            data: newUser,
             message: SUCCESS_MESSAGE.USER_CREATED
         };
 
