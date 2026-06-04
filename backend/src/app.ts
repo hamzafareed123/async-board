@@ -3,13 +3,16 @@ import {ENV} from "./config/env"
 import dbConnect from "./config/db"
 import helmet from "helmet";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import authRoute from "./modules/auth/auth-route"
 import { OutputHandler } from "./middlewares/outputHandler-middleware";
+
 
 dbConnect();
 const app = express();
 
 app.use(helmet());
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 app.use(morgan("dev"))
