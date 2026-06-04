@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { ISignUPDTO } from "../../types/auth-types";
+import { IForgotPasswordDTO, ILoginDTO, ISignUPDTO } from "../../types/auth-types";
 import { authServices } from "./auth-services";
 import { SUCCESS_MESSAGE } from "../../constants/success-message";
 import { OutputHandler } from "../../middlewares/outputHandler-middleware";
 import { STATUS_CODE } from "../../constants/status-codes";
 import { generateRefreshToken } from "../../utils/generateToken";
+import { ENV } from "../../config/env";
 
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
@@ -13,7 +14,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 
         const newUser = await authServices.signUp(userData);
 
-        const userId = newUser.user._id;
+        const userId = newUser.user.id;
         await generateRefreshToken(String(userId), res);
 
         (res as any).result = {
@@ -22,6 +23,60 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
         };
 
         OutputHandler(STATUS_CODE.CREATED, req, res, next);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const login = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userData = req.body as ILoginDTO;
+
+        const authResponse = await authServices.login(userData);
+
+        const userId = authResponse.user.id;
+        await generateRefreshToken(String(userId), res);
+
+        (res as any).result = {
+            data: authResponse,
+            message: SUCCESS_MESSAGE.LOGIN_SUCCESSFUL
+        };
+
+        OutputHandler(STATUS_CODE.OK, req, res, next);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const logout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const token = req.cookies?.refreshToken;
+
+        await authServices.logout(token);
+
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: ENV.isProduction
+        });
+
+        (res as any).result = {
+            data: null,
+            message: SUCCESS_MESSAGE.LOGOUT_SUCCESSFUL
+        }
+        OutputHandler(STATUS_CODE.OK, req, res, next)
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const forgotPassoword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const data: IForgotPasswordDTO = req.body;
+
+        await authServices.forgotPassword(data);
+        (res as any).result = { data: null, message: SUCCESS_MESSAGE.OTP_SENT };
+        OutputHandler(STATUS_CODE.OK, req, res, next);
     } catch (error) {
         next(error);
     }

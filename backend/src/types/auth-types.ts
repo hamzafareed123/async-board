@@ -1,7 +1,7 @@
 import moongoose from "mongoose";
 
 export interface IUser {
-    _id: moongoose.Types.ObjectId;
+    id: moongoose.Types.ObjectId;
     fullName: string;
     email: string;
     profilePic?: string;
@@ -35,4 +35,8 @@ export interface IRefreshToken {
     userId: moongoose.Types.ObjectId;
     token: string;
     createdAt: Date;
+}
+
+export interface IForgotPasswordDTO{
+    email:string;
 }
