@@ -9,5 +9,6 @@ export const ENV = {
     GMAIL_USER:process.env.GMAIL_USER as string,
     GMAIL_USER_PASSWORD:process.env.GMAIL_USER_PASSWORD as string,
     ACCESS_TOKEN_SECRET_KEY:process.env.ACCESS_TOKEN_SECRET_KEY as string,
-    REFRESH_TOKEN_SECRET_KEY:process.env.REFRESH_TOKEN_SECRET_KEY as string
+    REFRESH_TOKEN_SECRET_KEY:process.env.REFRESH_TOKEN_SECRET_KEY as string,
+    OTP_SECRET_KEY:process.env.OTP_SECRET_KEY as string,
 }

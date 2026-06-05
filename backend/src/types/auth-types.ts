@@ -40,3 +40,7 @@ export interface IRefreshToken {
 export interface IForgotPasswordDTO{
     email:string;
 }
+
+export interface IOTPDTO{
+    otp:string;
+}

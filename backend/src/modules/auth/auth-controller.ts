@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { IForgotPasswordDTO, ILoginDTO, ISignUPDTO } from "../../types/auth-types";
+import { IForgotPasswordDTO, ILoginDTO, IOTPDTO, ISignUPDTO } from "../../types/auth-types";
 import { authServices } from "./auth-services";
 import { SUCCESS_MESSAGE } from "../../constants/success-message";
 import { OutputHandler } from "../../middlewares/outputHandler-middleware";
@@ -76,8 +76,37 @@ export const forgotPassoword = async (req: Request, res: Response, next: NextFun
 
         await authServices.forgotPassword(data);
         (res as any).result = { data: null, message: SUCCESS_MESSAGE.OTP_SENT };
+        OutputHandler(STATUS_CODE.CREATED, req, res, next);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getAuthUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user = req.user;
+
+        (res as any).result = {
+            data: user,
+            message: SUCCESS_MESSAGE.AUTH_USER_FETCHED,
+        };
+
         OutputHandler(STATUS_CODE.OK, req, res, next);
     } catch (error) {
         next(error);
+    }
+}
+
+export const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        // TODO 
+        const otp: IOTPDTO = req.body;
+
+        const resetToken  = await authServices.verifyOtp(otp); 
+        console.log(otp);
+        OutputHandler(STATUS_CODE.OK, req, res, next);
+    } catch (error) {
+        next(error)
     }
 }
