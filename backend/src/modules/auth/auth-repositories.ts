@@ -1,8 +1,9 @@
 import { User } from "../../models/auth-model";
-import { ISignUPDTO } from "../../types/auth-types";
+import { IOTPDTO, ISignUPDTO } from "../../types/auth-types";
 import RefreshToken from '../../models/refreshToken-model';
 import crypto from "crypto";
 import bcrypt from "bcrypt";
+import { IUser } from './../../types/auth-types';
 
 
 export const authRepository = {
@@ -21,6 +22,10 @@ export const authRepository = {
         return await User.findOne({ email });
     },
 
+    async findUserById(id:string){
+        return await User.findById(id).select("-password");
+    },
+
     async deleteRefreshToken(token: string) {
         await RefreshToken.deleteOne({ token });
     },
@@ -32,5 +37,11 @@ export const authRepository = {
 
         await User.findByIdAndUpdate(userId, { otp: hashOtp, otpExpiry }, { new: true });
         return otp;
+    },
+
+    async findUserByOtp(otp: string) {
+        return await User.findOne({
+            otpExpiry: { $gt: new Date() },
+        });
     }
 }

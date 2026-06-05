@@ -1,4 +1,4 @@
-import { IAuthResponse, ISignUPDTO,ILoginDTO, IForgotPasswordDTO } from "../../types/auth-types";
+import { IAuthResponse, ISignUPDTO,ILoginDTO, IForgotPasswordDTO, IOTPDTO } from "../../types/auth-types";
 import { customError } from "../../utils/custom-error";
 import { authRepository } from "./auth-repositories";
 import { ERROR_MESSAGE } from "../../constants/error-message"
@@ -108,5 +108,30 @@ export const authServices = {
         await sendOTPEmail(email,otp).catch((error)=>{
             console.log("Error sending OTP email:",error);
         })
+    },
+
+    async verifyOtp(opt:IOTPDTO){
+
+        const user = await authRepository.findUserByOtp(opt.otp)
+
+        if (!user || !user.otp) {
+            throw new customError(
+                ERROR_MESSAGE.INVALID_OR_EXPIRED_OTP,
+                STATUS_CODE.BAD_REQUEST,
+            );
+        }
+
+        const isValidOtp = await bcrypt.compare(opt.otp, user.otp);
+
+        if (!isValidOtp) {
+            throw new customError(
+                ERROR_MESSAGE.INVALID_OR_EXPIRED_OTP,
+                STATUS_CODE.BAD_REQUEST,
+            );
+        }
+
+        const resetToken= generateToken(user.id,ENV.OTP_SECRET_KEY,"15m")
+
+        return {resetToken};
     }
 };
