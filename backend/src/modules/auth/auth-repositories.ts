@@ -40,6 +40,8 @@ export const authRepository = {
     },
 
     async findUserByOtp(otp: string) {
+
+        // TODO 
         return await User.findOne({
             otpExpiry: { $gt: new Date() },
         });

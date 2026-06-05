@@ -112,6 +112,7 @@ export const authServices = {
 
     async verifyOtp(opt:IOTPDTO){
 
+        // TODO 
         const user = await authRepository.findUserByOtp(opt.otp)
 
         if (!user || !user.otp) {
