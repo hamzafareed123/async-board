@@ -4,6 +4,7 @@ import RefreshToken from '../../models/refreshToken-model';
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { IUser } from './../../types/auth-types';
+import redis from "../../config/redis";
 
 
 export const authRepository = {
@@ -22,7 +23,7 @@ export const authRepository = {
         return await User.findOne({ email });
     },
 
-    async findUserById(id:string){
+    async findUserById(id: string) {
         return await User.findById(id).select("-password");
     },
 
@@ -33,17 +34,16 @@ export const authRepository = {
     async generateOTP(userId: string): Promise<string> {
         const otp = crypto.randomInt(100000, 999999).toString();
         const hashOtp = await bcrypt.hash(otp, 10);
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
-        await User.findByIdAndUpdate(userId, { otp: hashOtp, otpExpiry }, { new: true });
+        await redis.set(`otp:${userId}`, hashOtp, "EX", 600);
         return otp;
     },
 
-    async findUserByOtp(otp: string) {
+    async getOtpHash(userId: string): Promise<string | null> {
+        return await redis.get(`otp:${userId}`);
+    },
 
-        // TODO 
-        return await User.findOne({
-            otpExpiry: { $gt: new Date() },
-        });
+    async deleteOtp(userId: string): Promise<void> {
+        await redis.del(`otp:${userId}`)
     }
 }

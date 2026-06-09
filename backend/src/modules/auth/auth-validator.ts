@@ -43,11 +43,11 @@ export const forgotPasswordSchema = Joi.object({
 
 export const resetPasswordSchema = Joi.object({
 
-    resetToken: Joi.string().required().messages({
+  resetToken: Joi.string().required().messages({
     "string.empty": "Reset token is required",
     "any.required": "Reset token is required",
   }),
-  
+
   password: Joi.string().min(4).max(15).required().messages({
     "string.empty": "Password is Required",
     "any.required": "Password is Required",
@@ -62,8 +62,14 @@ export const resetPasswordSchema = Joi.object({
 
 
 export const verifyOtpSchema = Joi.object({
-    otp: Joi.string().length(6).required().messages({
-    "string.empty": "OTP is Required",
-    "any.required": "OTP is Required",
+  userId: Joi.string().required().messages({
+    "string.empty": "userId is required",
+    "any.required": "userId is required",
   }),
+  otp: Joi.string().length(6).required().messages({
+    "string.empty": "OTP is required",
+    "any.required": "OTP is required",
+    "string.length": "OTP must be 6 digits",
+  }),
+
 })

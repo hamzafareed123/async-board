@@ -42,5 +42,6 @@ export interface IForgotPasswordDTO{
 }
 
 export interface IOTPDTO{
+    userId:string;
     otp:string;
 }

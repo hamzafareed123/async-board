@@ -1,4 +1,4 @@
-import { IAuthResponse, ISignUPDTO,ILoginDTO, IForgotPasswordDTO, IOTPDTO } from "../../types/auth-types";
+import { IAuthResponse, ISignUPDTO, ILoginDTO, IForgotPasswordDTO, IOTPDTO } from "../../types/auth-types";
 import { customError } from "../../utils/custom-error";
 import { authRepository } from "./auth-repositories";
 import { ERROR_MESSAGE } from "../../constants/error-message"
@@ -7,8 +7,9 @@ import bcrypt from "bcrypt";
 import { sendWelcomeEmail } from "../../email/sendWelcomeEmail";
 import { generateToken } from "../../utils/generateToken";
 import { ENV } from "../../config/env";
-import {mapUser} from "../../utils/mapUser";
+import { mapUser } from "../../utils/mapUser";
 import { sendOTPEmail } from './../../email/sendOTPEmail';
+import redis from "../../config/redis";
 
 
 export const authServices = {
@@ -50,28 +51,28 @@ export const authServices = {
         }
     },
 
-    async login(userData:ILoginDTO):Promise<IAuthResponse>{
-        const {email,password}= userData;
+    async login(userData: ILoginDTO): Promise<IAuthResponse> {
+        const { email, password } = userData;
 
         const existingUser = await authRepository.findUserByEmail(email);
 
-        if(!existingUser){
+        if (!existingUser) {
             throw new customError(
                 ERROR_MESSAGE.INVALID_CREDENTIALS,
                 STATUS_CODE.UNAUTHORIZED
             )
         }
 
-        const isPasswordValid= await bcrypt.compare(password,existingUser.password);
+        const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
-        if(!isPasswordValid){
+        if (!isPasswordValid) {
             throw new customError(
                 ERROR_MESSAGE.INVALID_CREDENTIALS,
                 STATUS_CODE.UNAUTHORIZED
             )
         }
 
-        const accessToken= generateToken(
+        const accessToken = generateToken(
             existingUser._id.toString(),
             ENV.ACCESS_TOKEN_SECRET_KEY,
             "15m"
@@ -83,8 +84,8 @@ export const authServices = {
         };
     },
 
-    async logout(token:string){
-        if(!token){
+    async logout(token: string) {
+        if (!token) {
             throw new customError(
                 ERROR_MESSAGE.INVALID_TOKEN,
                 STATUS_CODE.BAD_REQUEST
@@ -94,35 +95,40 @@ export const authServices = {
         await authRepository.deleteRefreshToken(token);
     },
 
-    async forgotPassword(data:IForgotPasswordDTO):Promise<void>{
-        const {email} = data;
+    async forgotPassword(data: IForgotPasswordDTO): Promise<{ userId: string }> {
+        const { email } = data;
+
+
 
         const user = await authRepository.findUserByEmail(email);
 
-        if(!user){
-            throw new customError(ERROR_MESSAGE.USER_NOT_FOUND,STATUS_CODE.NOT_FOUND)
+        if (!user) {
+            return { userId: "" };
         }
 
         const otp = await authRepository.generateOTP(user._id.toString())
 
-        await sendOTPEmail(email,otp).catch((error)=>{
-            console.log("Error sending OTP email:",error);
+        await sendOTPEmail(email, otp).catch((error) => {
+            console.log("Error sending OTP email:", error);
         })
+
+        return { userId: user._id.toString() };
     },
 
-    async verifyOtp(opt:IOTPDTO){
+    async verifyOtp(data: IOTPDTO) {
 
-        // TODO 
-        const user = await authRepository.findUserByOtp(opt.otp)
+        const { userId, otp } = data;
 
-        if (!user || !user.otp) {
+        const storedHash = await authRepository.getOtpHash(userId);
+
+        if (!storedHash) {
             throw new customError(
                 ERROR_MESSAGE.INVALID_OR_EXPIRED_OTP,
-                STATUS_CODE.BAD_REQUEST,
+                STATUS_CODE.BAD_REQUEST
             );
         }
 
-        const isValidOtp = await bcrypt.compare(opt.otp, user.otp);
+        const isValidOtp = await bcrypt.compare(otp, storedHash);
 
         if (!isValidOtp) {
             throw new customError(
@@ -131,8 +137,11 @@ export const authServices = {
             );
         }
 
-        const resetToken= generateToken(user.id,ENV.OTP_SECRET_KEY,"15m")
+        await authRepository.deleteOtp(userId);
 
-        return {resetToken};
+
+        const resetToken = generateToken(userId, ENV.OTP_SECRET_KEY, "15m")
+
+        return { resetToken };
     }
 };
