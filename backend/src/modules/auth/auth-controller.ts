@@ -74,9 +74,12 @@ export const forgotPassoword = async (req: Request, res: Response, next: NextFun
     try {
         const data: IForgotPasswordDTO = req.body;
 
-        await authServices.forgotPassword(data);
-        (res as any).result = { data: null, message: SUCCESS_MESSAGE.OTP_SENT };
-        OutputHandler(STATUS_CODE.CREATED, req, res, next);
+       const userId= await authServices.forgotPassword(data);
+
+       console.log("userid",userId);
+
+        (res as any).result = { data: userId, message: SUCCESS_MESSAGE.OTP_SENT };
+        OutputHandler(STATUS_CODE.OK, req, res, next);
     } catch (error) {
         next(error);
     }
@@ -100,11 +103,19 @@ export const getAuthUser = async (req: Request, res: Response, next: NextFunctio
 export const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        // TODO 
-        const otp: IOTPDTO = req.body;
+        const data: IOTPDTO = req.body;
+          console.log("request body:", data);
 
-        const resetToken  = await authServices.verifyOtp(otp); 
-        console.log(otp);
+        const resetToken  = await authServices.verifyOtp(data); 
+
+         console.log("userId received:", data.userId);
+    console.log("otp received:", data.otp);
+
+          (res as any).result = {
+            data: resetToken,
+            message: SUCCESS_MESSAGE.OTP_VERIFIED,
+        };
+       
         OutputHandler(STATUS_CODE.OK, req, res, next);
     } catch (error) {
         next(error)

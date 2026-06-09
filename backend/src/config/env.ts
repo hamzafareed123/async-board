@@ -11,4 +11,6 @@ export const ENV = {
     ACCESS_TOKEN_SECRET_KEY:process.env.ACCESS_TOKEN_SECRET_KEY as string,
     REFRESH_TOKEN_SECRET_KEY:process.env.REFRESH_TOKEN_SECRET_KEY as string,
     OTP_SECRET_KEY:process.env.OTP_SECRET_KEY as string,
+    REDIS_HOST:process.env.REDIS_HOST,
+    REDIS_PORT:parseInt(process.env.REDIS_PORT || "6379")
 }
