@@ -37,11 +37,17 @@ export interface IRefreshToken {
     createdAt: Date;
 }
 
-export interface IForgotPasswordDTO{
-    email:string;
+export interface IForgotPasswordDTO {
+    email: string;
 }
 
-export interface IOTPDTO{
-    userId:string;
-    otp:string;
+export interface IOTPDTO {
+    userId: string;
+    otp: string;
+}
+
+export interface IResetPasswordDTO {
+    resetToken: string;
+    password: string;
+    confirmPassword: string;
 }

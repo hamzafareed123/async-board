@@ -20,7 +20,7 @@ export const authRepository = {
     },
 
     async findUserByEmail(email: string) {
-        return await User.findOne({ email });
+        return await User.findOne({ email }).select("-password");
     },
 
     async findUserById(id: string) {
@@ -45,5 +45,11 @@ export const authRepository = {
 
     async deleteOtp(userId: string): Promise<void> {
         await redis.del(`otp:${userId}`)
+    },
+
+    async resetPassword(userId:string,hashedPassword:string):Promise<void>{
+        await User.findByIdAndUpdate(userId,{
+            password:hashedPassword
+        })
     }
 }
