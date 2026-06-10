@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { IForgotPasswordDTO, ILoginDTO, IOTPDTO, ISignUPDTO } from "../../types/auth-types";
+import { IForgotPasswordDTO, ILoginDTO, IOTPDTO, IResetPasswordDTO, ISignUPDTO } from "../../types/auth-types";
 import { authServices } from "./auth-services";
 import { SUCCESS_MESSAGE } from "../../constants/success-message";
 import { OutputHandler } from "../../middlewares/outputHandler-middleware";
@@ -74,9 +74,9 @@ export const forgotPassoword = async (req: Request, res: Response, next: NextFun
     try {
         const data: IForgotPasswordDTO = req.body;
 
-       const userId= await authServices.forgotPassword(data);
+        const userId = await authServices.forgotPassword(data);
 
-       console.log("userid",userId);
+        console.log("userid", userId);
 
         (res as any).result = { data: userId, message: SUCCESS_MESSAGE.OTP_SENT };
         OutputHandler(STATUS_CODE.OK, req, res, next);
@@ -104,19 +104,30 @@ export const verifyOTP = async (req: Request, res: Response, next: NextFunction)
     try {
 
         const data: IOTPDTO = req.body;
-          console.log("request body:", data);
 
-        const resetToken  = await authServices.verifyOtp(data); 
+        const resetToken = await authServices.verifyOtp(data);
 
-         console.log("userId received:", data.userId);
-    console.log("otp received:", data.otp);
-
-          (res as any).result = {
+        (res as any).result = {
             data: resetToken,
             message: SUCCESS_MESSAGE.OTP_VERIFIED,
         };
-       
+
         OutputHandler(STATUS_CODE.OK, req, res, next);
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const data: IResetPasswordDTO = req.body;
+
+       await authServices.resetPassword(data);
+
+        (res as any).result = { data: null, message: SUCCESS_MESSAGE.PASSWORD_RESET_SUCCESS }
+
+        OutputHandler(STATUS_CODE.OK, req, res, next)
     } catch (error) {
         next(error)
     }
