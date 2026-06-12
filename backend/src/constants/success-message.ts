@@ -6,4 +6,5 @@ export const SUCCESS_MESSAGE = {
     OTP_SENT: "If that email exists, an OTP has been sent",
     OTP_VERIFIED: "OTP successfully Verified",
     AUTH_USER_FETCHED: "Authenticated user retrieved successfully",
+    PROFILE_UPDATED: "Profile Updated Successfully"
 } as const;

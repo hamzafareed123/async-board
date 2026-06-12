@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { IForgotPasswordDTO, ILoginDTO, IOTPDTO, IResetPasswordDTO, ISignUPDTO } from "../../types/auth-types";
+import { IForgotPasswordDTO, ILoginDTO, IOTPDTO, IResetPasswordDTO, ISignUPDTO, IUpdateProfileDTO } from "../../types/auth-types";
 import { authServices } from "./auth-services";
 import { SUCCESS_MESSAGE } from "../../constants/success-message";
 import { OutputHandler } from "../../middlewares/outputHandler-middleware";
 import { STATUS_CODE } from "../../constants/status-codes";
 import { generateRefreshToken } from "../../utils/generateToken";
 import { ENV } from "../../config/env";
+import { uploadToCloudinary } from "../../utils/uploadToCloudinary";
 
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
@@ -123,9 +124,36 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
 
         const data: IResetPasswordDTO = req.body;
 
-       await authServices.resetPassword(data);
+        await authServices.resetPassword(data);
 
         (res as any).result = { data: null, message: SUCCESS_MESSAGE.PASSWORD_RESET_SUCCESS }
+
+        OutputHandler(STATUS_CODE.OK, req, res, next)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+
+        const userId = (req.user as any).id
+        const { fullName } = req.body;
+
+
+        const file = req.file;
+
+        let avatarUrl: string | undefined
+
+        if (file) {
+            avatarUrl = await uploadToCloudinary(file.buffer, "asyncboard/avatars");
+        }
+
+        const updatedProfile = await authServices.updateProfile(userId, { fullName, avatarUrl });
+
+
+        (res as any).result = { data: updatedProfile, message: SUCCESS_MESSAGE.PROFILE_UPDATED }
 
         OutputHandler(STATUS_CODE.OK, req, res, next)
     } catch (error) {
