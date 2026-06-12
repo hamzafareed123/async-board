@@ -1,5 +1,5 @@
 import { User } from "../../models/auth-model";
-import { IOTPDTO, ISignUPDTO } from "../../types/auth-types";
+import { IOTPDTO, ISignUPDTO, IUpdateProfileDTO } from "../../types/auth-types";
 import RefreshToken from '../../models/refreshToken-model';
 import crypto from "crypto";
 import bcrypt from "bcrypt";
@@ -47,9 +47,17 @@ export const authRepository = {
         await redis.del(`otp:${userId}`)
     },
 
-    async resetPassword(userId:string,hashedPassword:string):Promise<void>{
-        await User.findByIdAndUpdate(userId,{
-            password:hashedPassword
+    async resetPassword(userId: string, hashedPassword: string): Promise<void> {
+        await User.findByIdAndUpdate(userId, {
+            password: hashedPassword
         })
+    },
+
+    async updateProfile(userId: string, data: IUpdateProfileDTO) {
+        return await User.findByIdAndUpdate(userId, {
+            fullName: data.fullName,
+            profilePic: data.avatarUrl
+        },
+            { new: true })
     }
 }

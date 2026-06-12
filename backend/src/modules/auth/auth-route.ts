@@ -1,8 +1,25 @@
 import express from "express";
-import { signUpSchema, signInSchema, forgotPasswordSchema, verifyOtpSchema, resetPasswordSchema } from './auth-validator';
-import { signUp, login, logout, forgotPassoword, getAuthUser, verifyOTP, resetPassword } from "./auth-controller";
+import {
+    signUpSchema,
+    signInSchema,
+    forgotPasswordSchema,
+    verifyOtpSchema,
+    resetPasswordSchema,
+    updateProfileSchema
+} from './auth-validator';
+import {
+    signUp,
+    login,
+    logout,
+    forgotPassoword,
+    getAuthUser,
+    verifyOTP,
+    resetPassword,
+    updateProfile
+} from "./auth-controller";
 import { validateRequest } from "../../middlewares/validation-middleware";
 import { protectedRoute } from "../../middlewares/auth-middleware";
+import { upload } from "../../config/multer";
 
 
 const router = express.Router();
@@ -14,6 +31,7 @@ router.post("/forgot-password", validateRequest(forgotPasswordSchema), forgotPas
 router.post("/verify-otp", validateRequest(verifyOtpSchema), verifyOTP);
 router.post("/reset-password", validateRequest(resetPasswordSchema), resetPassword);
 router.get("/auth-user", protectedRoute, getAuthUser)
+router.patch("/update-profile", protectedRoute,upload.single("avatar"), validateRequest(updateProfileSchema),  updateProfile)
 
 
 

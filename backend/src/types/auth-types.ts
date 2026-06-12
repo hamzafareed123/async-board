@@ -13,8 +13,6 @@ export interface IUser {
     updatedAt: Date;
 }
 
-
-
 export interface ISignUPDTO {
     fullName: string;
     email: string;
@@ -50,4 +48,9 @@ export interface IResetPasswordDTO {
     resetToken: string;
     password: string;
     confirmPassword: string;
+}
+
+export interface IUpdateProfileDTO {
+    fullName?: string;
+    avatarUrl?: string;
 }

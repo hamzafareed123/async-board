@@ -1,4 +1,4 @@
-import { IAuthResponse, ISignUPDTO, ILoginDTO, IForgotPasswordDTO, IOTPDTO, IResetPasswordDTO } from "../../types/auth-types";
+import { IAuthResponse, ISignUPDTO, ILoginDTO, IForgotPasswordDTO, IOTPDTO, IResetPasswordDTO, IUpdateProfileDTO, IUser } from "../../types/auth-types";
 import { customError } from "../../utils/custom-error";
 import { authRepository } from "./auth-repositories";
 import { ERROR_MESSAGE } from "../../constants/error-message"
@@ -178,6 +178,22 @@ export const authServices = {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         await authRepository.resetPassword(user.id.toString(), hashedPassword);
-        await redis.set(`used_reset_token:${resetToken}`,"used","EX",900)
+        await redis.set(`used_reset_token:${resetToken}`, "used", "EX", 900)
+    },
+
+    async updateProfile(userId: string, data: IUpdateProfileDTO) {
+
+        let userData: Partial<IUser> = {}
+
+        if (data.fullName) userData.fullName = data.fullName;
+        if (data.avatarUrl) userData.profilePic = data.avatarUrl;
+
+        const updatedProfile = await authRepository.updateProfile(userId, userData)
+
+        if (!updatedProfile) {
+            throw new customError(ERROR_MESSAGE.USER_NOT_FOUND, STATUS_CODE.NOT_FOUND);
+        }
+
+        return { user: mapUser(updatedProfile) };
     }
 };

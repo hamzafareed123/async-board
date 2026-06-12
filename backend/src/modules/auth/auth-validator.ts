@@ -60,7 +60,6 @@ export const resetPasswordSchema = Joi.object({
   }),
 });
 
-
 export const verifyOtpSchema = Joi.object({
   userId: Joi.string().required().messages({
     "string.empty": "userId is required",
@@ -72,4 +71,11 @@ export const verifyOtpSchema = Joi.object({
     "string.length": "OTP must be 6 digits",
   }),
 
-})
+});
+
+export const updateProfileSchema = Joi.object({
+  fullName: Joi.string().trim().optional().messages({
+    "string.empty": "Full Name cannot be empty",
+  }),
+
+}).or("fullName", "avatar");
