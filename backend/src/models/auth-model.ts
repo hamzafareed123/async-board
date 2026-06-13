@@ -1,5 +1,5 @@
-import {Schema, model, Document} from "mongoose";
-import {IUser} from "../types/auth-types";
+import { Schema, model, Document } from "mongoose";
+import { IUser } from "../types/auth-types";
 
 
 export interface IUserDocument extends Document {
@@ -8,8 +8,6 @@ export interface IUserDocument extends Document {
   password: string;
   profilePic?: string;
   role: "user" | "admin";
-  otp?: string;
-  otpExpiry?: Date;
   provider: "local" | "google";
   googleId?: string;
   createdAt: Date;
@@ -37,16 +35,6 @@ const userSchema = new Schema<IUserDocument>(
 
     profilePic: {
       type: String,
-    },
-
-    otp: {
-      type: String,
-      default: null,
-    },
-
-    otpExpiry: {
-      type: Date,
-      default: null,
     },
 
     provider: {
