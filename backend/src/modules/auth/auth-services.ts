@@ -182,13 +182,7 @@ export const authServices = {
     },
 
     async updateProfile(userId: string, data: IUpdateProfileDTO) {
-
-        let userData: Partial<IUser> = {}
-
-        if (data.fullName) userData.fullName = data.fullName;
-        if (data.avatarUrl) userData.profilePic = data.avatarUrl;
-
-        const updatedProfile = await authRepository.updateProfile(userId, userData)
+        const updatedProfile = await authRepository.updateProfile(userId, data);
 
         if (!updatedProfile) {
             throw new customError(ERROR_MESSAGE.USER_NOT_FOUND, STATUS_CODE.NOT_FOUND);
@@ -196,4 +190,5 @@ export const authServices = {
 
         return { user: mapUser(updatedProfile) };
     }
+
 };

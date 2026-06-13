@@ -31,7 +31,7 @@ router.post("/forgot-password", validateRequest(forgotPasswordSchema), forgotPas
 router.post("/verify-otp", validateRequest(verifyOtpSchema), verifyOTP);
 router.post("/reset-password", validateRequest(resetPasswordSchema), resetPassword);
 router.get("/auth-user", protectedRoute, getAuthUser)
-router.patch("/update-profile", protectedRoute,upload.single("avatar"), validateRequest(updateProfileSchema),  updateProfile)
+router.patch("/update-profile", protectedRoute, upload.single("avatar"), validateRequest(updateProfileSchema), updateProfile)
 
 
 

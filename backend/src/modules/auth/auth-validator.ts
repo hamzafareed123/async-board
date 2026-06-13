@@ -78,4 +78,4 @@ export const updateProfileSchema = Joi.object({
     "string.empty": "Full Name cannot be empty",
   }),
 
-}).or("fullName", "avatar");
+});

@@ -33,6 +33,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     try {
         const userData = req.body as ILoginDTO;
 
+        
+
         const authResponse = await authServices.login(userData);
 
         const userId = authResponse.user.id;
@@ -141,13 +143,15 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         const userId = (req.user as any).id
         const { fullName } = req.body;
 
-
+        
         const file = req.file;
+        console.log("filename",file)
 
         let avatarUrl: string | undefined
 
         if (file) {
             avatarUrl = await uploadToCloudinary(file.buffer, "asyncboard/avatars");
+            console.log("avatarUrl from cloudinary:", avatarUrl);
         }
 
         const updatedProfile = await authServices.updateProfile(userId, { fullName, avatarUrl });

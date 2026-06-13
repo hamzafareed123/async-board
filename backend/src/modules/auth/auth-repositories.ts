@@ -1,10 +1,10 @@
-import { User } from "../../models/auth-model";
+import { IUserDocument, User } from "../../models/auth-model";
 import { IOTPDTO, ISignUPDTO, IUpdateProfileDTO } from "../../types/auth-types";
-import RefreshToken from '../../models/refreshToken-model';
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { IUser } from './../../types/auth-types';
 import redis from "../../config/redis";
+import RefreshToken from "../../models/refreshToken-model";
 
 
 export const authRepository = {
@@ -20,7 +20,7 @@ export const authRepository = {
     },
 
     async findUserByEmail(email: string) {
-        return await User.findOne({ email }).select("-password");
+        return await User.findOne({ email });
     },
 
     async findUserById(id: string) {
@@ -54,10 +54,15 @@ export const authRepository = {
     },
 
     async updateProfile(userId: string, data: IUpdateProfileDTO) {
-        return await User.findByIdAndUpdate(userId, {
-            fullName: data.fullName,
-            profilePic: data.avatarUrl
-        },
-            { new: true })
+        const updateFields: Partial<IUserDocument> = {};
+
+        if (data.fullName) updateFields.fullName = data.fullName;
+        if (data.avatarUrl) updateFields.profilePic = data.avatarUrl;
+
+        return await User.findByIdAndUpdate(
+            userId,
+            { $set: updateFields },
+            { returnDocument: "after" }
+        );
     }
 }
