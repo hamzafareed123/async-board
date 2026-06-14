@@ -1,3 +1,4 @@
+import Room from '../models/room-model';
 export const SUCCESS_MESSAGE = {
     USER_CREATED: "User created successfully",
     LOGIN_SUCCESSFUL: "Login successful",
@@ -6,5 +7,8 @@ export const SUCCESS_MESSAGE = {
     OTP_SENT: "If that email exists, an OTP has been sent",
     OTP_VERIFIED: "OTP successfully Verified",
     AUTH_USER_FETCHED: "Authenticated user retrieved successfully",
-    PROFILE_UPDATED: "Profile Updated Successfully"
+    PROFILE_UPDATED: "Profile Updated Successfully",
+
+    // Room
+    ROOM_CREATED:"Room Created Successfully"
 } as const;

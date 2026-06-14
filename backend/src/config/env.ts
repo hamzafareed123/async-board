@@ -15,5 +15,6 @@ export const ENV = {
     RESET_TOKEN_SECRET_KEY: process.env.RESET_TOKEN_SECRET_KEY as string,
     CLOUD_NAME: process.env.CLOUD_NAME as string,
     CLOUD_API_KEY: process.env.CLOUD_API_KEY as string,
-    CLOUD_API_SECRET: process.env.CLOUD_API_SECRET as string
+    CLOUD_API_SECRET: process.env.CLOUD_API_SECRET as string,
+    SERVER_URL:process.env.SERVER_URL as string
 }
