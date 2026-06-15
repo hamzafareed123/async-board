@@ -20,6 +20,17 @@ export const roomServices = {
         };
 
 
+    },
+
+    async deleteRoom(creator_id: string, room_id: string) {
+
+        const room = await roomRepository.findRoomByIdAndCreator(creator_id, room_id);
+
+        if (!room) {
+            throw new customError(ERROR_MESSAGE.UNAUTHORIZED, STATUS_CODE.UNAUTHORIZED)
+        }
+
+        await roomRepository.deleteRoom(room_id)
     }
 }
 

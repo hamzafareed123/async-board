@@ -10,5 +10,6 @@ export const SUCCESS_MESSAGE = {
     PROFILE_UPDATED: "Profile Updated Successfully",
 
     // Room
-    ROOM_CREATED:"Room Created Successfully"
+    ROOM_CREATED:"Room Created Successfully",
+    ROOM_DELETED:"Room Deleted Successfully",
 } as const;

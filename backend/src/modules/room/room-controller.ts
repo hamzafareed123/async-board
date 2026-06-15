@@ -20,3 +20,18 @@ export const createRoom = async (req: Request, res: Response, next: NextFunction
         next(error)
     }
 }
+
+
+export const deleteRoom = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const creator_id = (req.user as any).id;
+
+        const room_id = req.params.room_id as string
+
+        await roomServices.deleteRoom(creator_id, room_id);
+        (res as any).result = { data: null, message: SUCCESS_MESSAGE.ROOM_DELETED }
+        OutputHandler(STATUS_CODE.OK, req, res, next);
+    } catch (error) {
+        next(error)
+    }
+}
