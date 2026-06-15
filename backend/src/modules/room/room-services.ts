@@ -31,6 +31,32 @@ export const roomServices = {
         }
 
         await roomRepository.deleteRoom(room_id)
+    },
+
+    async joinRoom(user_id: string, room_code: string) {
+
+        const room = await roomRepository.findRoomByCode(room_code);
+
+        if (!room) {
+            throw new customError(ERROR_MESSAGE.ROOM_NOT_FOUND, STATUS_CODE.NOT_FOUND);
+        }
+
+        if (room.inviteCode?.expiresAt && room.inviteCode.expiresAt < new Date()) {
+            throw new customError(ERROR_MESSAGE.ROOM_EXPIRED, STATUS_CODE.NOT_FOUND)
+        }
+
+        if (room.inviteCode.maxMembers && room.members.length >= room.inviteCode.maxMembers) {
+            throw new customError(ERROR_MESSAGE.ROOM_FULL, STATUS_CODE.NO_CONTENT)
+        }
+
+        const alreadyMember = room.members.find(f => f.userId.toString() === user_id.toString());
+
+        if (alreadyMember) {
+            throw new customError(ERROR_MESSAGE.ROOM_ALREADY_JOINED, STATUS_CODE.BAD_REQUEST)
+        }
+
+       const  updatedRoom =await roomRepository.joinRoom(user_id, room.id);
+       return updatedRoom
     }
 }
 

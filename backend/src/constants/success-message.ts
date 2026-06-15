@@ -11,5 +11,6 @@ export const SUCCESS_MESSAGE = {
 
     // Room
     ROOM_CREATED:"Room Created Successfully",
+    ROOM_JOIN:"Successfully Joined Room",
     ROOM_DELETED:"Room Deleted Successfully",
 } as const;

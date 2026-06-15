@@ -28,6 +28,21 @@ export const roomRepository = {
 
     async deleteRoom(room_id: string) {
         await Room.findByIdAndDelete(room_id)
+    },
+
+    async findRoomByCode(room_code: string) {
+        return await Room.findOne({ 'inviteCode.code': room_code })
+    },
+
+    async joinRoom(user_id: string, room_id: string) {
+        return await Room.findByIdAndUpdate(room_id, {
+            $push: {
+                members: {
+                    userId: user_id,
+                    role: "viewer"
+                }
+            }
+        }, { returnDocument: "after" })
     }
 }
 
