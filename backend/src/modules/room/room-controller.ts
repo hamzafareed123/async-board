@@ -35,3 +35,17 @@ export const deleteRoom = async (req: Request, res: Response, next: NextFunction
         next(error)
     }
 }
+
+
+export const joinRoom = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user_id = (req.user as any).id;
+        const room_code = req.params.code as string;
+
+       const updatedRoom = await roomServices.joinRoom(user_id, room_code);
+        (res as any).result = { data: updatedRoom, message: SUCCESS_MESSAGE.ROOM_JOIN }
+        OutputHandler(STATUS_CODE.OK, req, res, next);
+    } catch (error) {
+        next(error)
+    }
+}
