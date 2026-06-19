@@ -43,6 +43,16 @@ export const roomRepository = {
                 }
             }
         }, { returnDocument: "after" })
+    },
+
+    async findRoomAndPopulateMember(user_id: string, room_id: string) {
+        return await Room.findOne({
+            _id: room_id,
+            "members.userId": user_id
+        }).populate({
+            path: "members.userId",
+            select: 'fullName profilePic',
+        })
     }
 }
 

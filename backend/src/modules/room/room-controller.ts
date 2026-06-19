@@ -42,8 +42,21 @@ export const joinRoom = async (req: Request, res: Response, next: NextFunction) 
         const user_id = (req.user as any).id;
         const room_code = req.params.code as string;
 
-       const updatedRoom = await roomServices.joinRoom(user_id, room_code);
+        const updatedRoom = await roomServices.joinRoom(user_id, room_code);
         (res as any).result = { data: updatedRoom, message: SUCCESS_MESSAGE.ROOM_JOIN }
+        OutputHandler(STATUS_CODE.OK, req, res, next);
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const getRoomMembers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user_id = (req.user as any).id;
+        const room_id = req.params.room_id as string;
+
+        const roomMembers = await roomServices.getRoomMembers(user_id, room_id);
+        (res as any).result = { data: roomMembers, message: SUCCESS_MESSAGE.ROOM_MEMBERS_FETCH };
         OutputHandler(STATUS_CODE.OK, req, res, next);
     } catch (error) {
         next(error)

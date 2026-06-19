@@ -15,10 +15,10 @@ export const ERROR_MESSAGE = {
     CONFIRM_PASS_NOT_MATCH:"Confirm password not match ",
 
     // Room
-
     ROOM_NOT_FOUND:"Room not Found",
     ROOM_EXPIRED:"Room is expired",
     ROOM_FULL:"Room capacity is full",
-    ROOM_ALREADY_JOINED:"User already joined the room"
+    ROOM_ALREADY_JOINED:"User already joined the room",
+    ROOM_MEMBER_NOT_FOUND:"room member not found"
 
 } as const;
