@@ -7,6 +7,7 @@ export const mapUser = (user: IUserDocument): IUser => ({
   fullName: user.fullName,
   email: user.email,
   profilePic:user.profilePic,
+  cursorColor:user.cursorColor,
   createdAt: user.createdAt,
   updatedAt: user.updatedAt,
 });

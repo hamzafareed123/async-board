@@ -78,5 +78,6 @@ export const updateProfileSchema = Joi.object({
   fullName: Joi.string().trim().optional().messages({
     "string.empty": "Full Name cannot be empty",
   }),
-
+  cursorColor: Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).optional()
+    .messages({ "string.pattern.base": "Must be a valid hex color" })
 });

@@ -3,7 +3,6 @@ import { ERROR_MESSAGE } from "../../constants/error-message";
 import { STATUS_CODE } from "../../constants/status-codes";
 import { ICreateRoomDTO } from '../../types/room-types';
 import { customError } from "../../utils/custom-error";
-import { authRepository } from "../auth/auth-repositories";
 import crypto from 'crypto';
 import { roomRepository } from "./room-repositories";
 
