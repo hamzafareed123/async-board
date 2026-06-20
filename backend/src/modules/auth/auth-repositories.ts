@@ -58,6 +58,7 @@ export const authRepository = {
 
         if (data.fullName) updateFields.fullName = data.fullName;
         if (data.avatarUrl) updateFields.profilePic = data.avatarUrl;
+        if (data.cursorColor) updateFields.cursorColor = data.cursorColor;
 
         return await User.findByIdAndUpdate(
             userId,

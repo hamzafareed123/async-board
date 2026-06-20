@@ -19,6 +19,7 @@ export const ERROR_MESSAGE = {
     ROOM_EXPIRED:"Room is expired",
     ROOM_FULL:"Room capacity is full",
     ROOM_ALREADY_JOINED:"User already joined the room",
-    ROOM_MEMBER_NOT_FOUND:"room member not found"
+    ROOM_MEMBER_NOT_FOUND:"room member not found",
+    NOT_MEMBER:"user is not room member"
 
 } as const;

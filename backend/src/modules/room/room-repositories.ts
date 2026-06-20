@@ -53,6 +53,10 @@ export const roomRepository = {
             path: "members.userId",
             select: 'fullName profilePic',
         })
+    },
+
+    async findRoomById(room_id: string) {
+        return await Room.findById(room_id);
     }
 }
 

@@ -5,8 +5,7 @@ export interface IUser {
     fullName: string;
     email: string;
     profilePic?: string;
-    otp?: string;
-    otpExpiry?: Date;
+    cursorColor?: string;
     provider?: string;
     googleId?: string;
     createdAt: Date;
@@ -53,4 +52,5 @@ export interface IResetPasswordDTO {
 export interface IUpdateProfileDTO {
     fullName?: string;
     avatarUrl?: string;
+    cursorColor?: string;
 }
