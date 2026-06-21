@@ -6,6 +6,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import authRoute from "./modules/auth/auth-route";
 import roomRoute from "./modules/room/room.route";
+import elementRoute from "./modules/element/element-route";
 import { OutputHandler } from "./middlewares/outputHandler-middleware";
 
 
@@ -21,6 +22,7 @@ app.use(morgan("dev"));
 
 app.use("/api/auth", authRoute);
 app.use("/api/room", roomRoute);
+app.use("/api/element", elementRoute);
 
 app.use((error: any, req: any, res: any, next: any) => {
   (res as any).error = error;
