@@ -10,8 +10,11 @@ export const SUCCESS_MESSAGE = {
     PROFILE_UPDATED: "Profile Updated Successfully",
 
     // Room
-    ROOM_CREATED:"Room Created Successfully",
-    ROOM_JOIN:"Successfully Joined Room",
-    ROOM_DELETED:"Room Deleted Successfully",
-    ROOM_MEMBERS_FETCH:"Room Members Fetch Successfully"
+    ROOM_CREATED: "Room Created Successfully",
+    ROOM_JOIN: "Successfully Joined Room",
+    ROOM_DELETED: "Room Deleted Successfully",
+    ROOM_MEMBERS_FETCH: "Room Members Fetch Successfully",
+
+    // Element
+    ELEMENT_CREATED: "element created successfully"
 } as const;
