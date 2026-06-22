@@ -24,5 +24,6 @@ export const ERROR_MESSAGE = {
 
     // Element
     ELEMENT_NOT_CREATED:"Element not created",
+    ELEMENT_NOT_FOUND:"Element not created",
 
 } as const;

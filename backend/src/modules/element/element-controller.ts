@@ -12,13 +12,30 @@ export const createElement = async (req: Request, res: Response, next: NextFunct
         const user_id = (req.user as any).id;
         const room_id = req.params.room_id as string;
 
-
-
         const element = await elementService.createElement(elementData, user_id, room_id);
 
         (res as any).result = { data: element, message: SUCCESS_MESSAGE.ELEMENT_CREATED };
 
         OutputHandler(STATUS_CODE.CREATED, req, res, next);
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+export const getElements = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const user_id = (req.user as any).id;
+        const room_id = req.params.room_id as string;
+
+      
+
+        const elements = await elementService.getElements(user_id, room_id);
+
+        (res as any).result = { data: elements, message: SUCCESS_MESSAGE.ELEMENT_FETCH };
+
+        OutputHandler(STATUS_CODE.OK, req, res, next);
     } catch (error) {
         next(error);
     }

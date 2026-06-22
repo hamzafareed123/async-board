@@ -16,5 +16,6 @@ export const SUCCESS_MESSAGE = {
     ROOM_MEMBERS_FETCH: "Room Members Fetch Successfully",
 
     // Element
-    ELEMENT_CREATED: "element created successfully"
+    ELEMENT_CREATED: "element created successfully",
+    ELEMENT_FETCH: "Elements fetch successfully"
 } as const;
