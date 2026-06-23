@@ -7,3 +7,4 @@ export interface ICreateRoomDTO {
     maxMembers?: number;
     expiresAt?: Date;
 }
+

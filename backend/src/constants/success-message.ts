@@ -17,5 +17,7 @@ export const SUCCESS_MESSAGE = {
 
     // Element
     ELEMENT_CREATED: "element created successfully",
-    ELEMENT_FETCH: "Elements fetch successfully"
+    ELEMENT_FETCH: "Elements fetch successfully",
+    ELEMENT_UPDATE: "Element Updated successfully",
+    ELEMENT_DELETED: "Element Deleted successfully",
 } as const;

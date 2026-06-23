@@ -1,6 +1,6 @@
 import { ERROR_MESSAGE } from "../../constants/error-message";
 import { STATUS_CODE } from "../../constants/status-codes";
-import { ICreateElementDTO } from "../../types/element-types";
+import { ICreateElementDTO, IUPDATEELEMENTDTO } from "../../types/element-types";
 import { customError } from "../../utils/custom-error";
 import { elementRepository } from "./element-repositories";
 
@@ -18,14 +18,27 @@ export const elementService = {
 
     },
 
-    async getElements(user_id:string,room_id:string){
+    async getElements(room_id: string) {
 
-        const elements = await elementRepository.getElements(user_id,room_id)
+        return await elementRepository.getElements(room_id)
+    },
 
-        if(!elements){
-            throw new customError(ERROR_MESSAGE.ELEMENT_NOT_FOUND,STATUS_CODE.NOT_FOUND)
+    async updateElement(data: IUPDATEELEMENTDTO, room_id: string, element_id: string) {
+        const element = await elementRepository.updateElement(data, room_id, element_id)
+
+        if (!element) {
+            throw new customError(ERROR_MESSAGE.ELEMENT_NOT_FOUND, STATUS_CODE.NOT_FOUND);
         }
 
-        return elements;
+        return element;
+    },
+
+    async deleteElement(room_id: string, element_id: string) {
+
+        const element = await elementRepository.deleteElement(room_id, element_id)
+        if (!element) {
+            throw new customError(ERROR_MESSAGE.ELEMENT_NOT_FOUND, STATUS_CODE.NOT_FOUND);
+        }
+        return element
     }
 }

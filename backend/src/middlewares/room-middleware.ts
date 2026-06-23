@@ -25,10 +25,7 @@ export const isMember = async (req: Request, res: Response, next: NextFunction) 
 export const isEditorOrAbove = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        const user_id = (req.user as any).id;
-        const room_id = req.params.room_id as string;
-
-        const { room, member } = await getRoomAndMember(room_id, user_id)
+        const member = (req as any).member;
 
 
         if (member?.role !== "editor" && member?.role !== "owner") {
@@ -36,7 +33,6 @@ export const isEditorOrAbove = async (req: Request, res: Response, next: NextFun
         }
 
         (req as any).member = member;
-        (req as any).room = room;
         next()
     } catch (error) {
         next(error)
@@ -45,19 +41,13 @@ export const isEditorOrAbove = async (req: Request, res: Response, next: NextFun
 
 export const isOwner = async (req: Request, res: Response, next: NextFunction) => {
     try {
-
-        const user_id = (req.user as any).id;
-        const room_id = req.params.room_id as string;
-
-        const { room, member } = await getRoomAndMember(room_id, user_id);
-
+        const member = (req as any).member;
 
         if (member?.role !== "owner") {
             throw new customError(ERROR_MESSAGE.UNAUTHORIZED, STATUS_CODE.FORBIDDEN)
         }
 
         (req as any).member = member;
-        (req as any).room = room;
         next()
     } catch (error) {
         next(error)
