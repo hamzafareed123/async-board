@@ -10,7 +10,7 @@ export const ERROR_MESSAGE = {
     ADMIN_ACCESS: "Unauthorized Only Admin can access",
     FORBIDDEN: "Forbidden",
     USERID_NOT_FOUND: "User Id not Found",
-    TOO_MANY_REQUEST: "Too many requests, please try again later",
+    TOO_MANY_REQUEST: "Too many requests, please try again after 5 mins",
     INVALID_OR_EXPIRED_OTP: "Invalid or expired OTP",
     CONFIRM_PASS_NOT_MATCH: "Confirm password not match ",
 
