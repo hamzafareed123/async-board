@@ -4,10 +4,12 @@ import { createElement, getElements, updateElement, deleteElement } from "./elem
 import { isEditorOrAbove, isMember } from "../../middlewares/room-middleware";
 import { validateRequest } from '../../middlewares/validation-middleware';
 import { createElementSchema } from "./element-validator";
+import { Limiter } from "../../middlewares/rateLimiter-middleware";
 
 
 const router = express.Router();
 
+router.use(Limiter);
 router.use(protectedRoute);
 router.post(
     "/:room_id/elements",
