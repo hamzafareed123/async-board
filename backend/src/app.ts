@@ -10,6 +10,9 @@ import elementRoute from "./modules/element/element-route";
 import { OutputHandler } from "./middlewares/outputHandler-middleware";
 
 
+// TODO 
+// rate limiting
+//snapshots feature 
 
 dbConnect();
 const app = express();
