@@ -11,7 +11,7 @@ import { OutputHandler } from "./middlewares/outputHandler-middleware";
 
 
 // TODO 
-// rate limiting
+
 //snapshots feature 
 
 dbConnect();
