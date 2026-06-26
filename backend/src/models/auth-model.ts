@@ -7,7 +7,7 @@ export interface IUserDocument extends Document {
   email: string;
   password: string;
   profilePic?: string;
-  cursorColor?:string;
+  cursorColor?: string;
   role: "user" | "admin";
   provider: "local" | "google";
   googleId?: string;
@@ -38,9 +38,9 @@ const userSchema = new Schema<IUserDocument>(
       type: String,
     },
 
-    cursorColor :{
-      type:String,
-      default:"#6E6AF7", 
+    cursorColor: {
+      type: String,
+      default: "#6E6AF7",
     },
 
     provider: {
