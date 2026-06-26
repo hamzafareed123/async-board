@@ -20,4 +20,11 @@ export const SUCCESS_MESSAGE = {
     ELEMENT_FETCH: "Elements fetch successfully",
     ELEMENT_UPDATE: "Element Updated successfully",
     ELEMENT_DELETED: "Element Deleted successfully",
+
+
+    // Snapshot
+    SNAPSHOT_CREATED: "Snapshot created successfully",
+    SNAPSHOT_UPDATED: "Snapshot updated successfully",
+    SNAPSHOT_DELETED: "Snapshot deleted successfully",
+    SNAPSHOT_FETCHED: "Sanpshot fetched successfully",
 } as const;

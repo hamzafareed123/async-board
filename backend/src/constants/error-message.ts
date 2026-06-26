@@ -26,4 +26,7 @@ export const ERROR_MESSAGE = {
     ELEMENT_NOT_CREATED:"Element not created",
     ELEMENT_NOT_FOUND:"Element not created",
 
+    // Snapshot
+    SNAPSHOT_NOT_FOUND:"Snapshot not found",
+    
 } as const;

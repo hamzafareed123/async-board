@@ -7,12 +7,9 @@ import cookieParser from "cookie-parser";
 import authRoute from "./modules/auth/auth-route";
 import roomRoute from "./modules/room/room.route";
 import elementRoute from "./modules/element/element-route";
+import snapshotRoute from "./modules/snapshot/snapshot-route";
 import { OutputHandler } from "./middlewares/outputHandler-middleware";
 
-
-// TODO 
-
-//snapshots feature 
 
 dbConnect();
 const app = express();
@@ -26,6 +23,7 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRoute);
 app.use("/api/room", roomRoute);
 app.use("/api/element", elementRoute);
+app.use("/api/snapshot",snapshotRoute)
 
 app.use((error: any, req: any, res: any, next: any) => {
   (res as any).error = error;
