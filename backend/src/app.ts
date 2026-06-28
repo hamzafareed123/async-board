@@ -11,6 +11,9 @@ import snapshotRoute from "./modules/snapshot/snapshot-route";
 import { OutputHandler } from "./middlewares/outputHandler-middleware";
 
 
+// TODO 
+ // setup socket.io
+
 dbConnect();
 const app = express();
 
