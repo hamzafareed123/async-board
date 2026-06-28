@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ICREATESnapShotDTO, IUPDATESnapShotDTO } from "../../types/snapshot-types";
+import { ICREATESnapShotDTO } from "../../types/snapshot-types";
 import { SUCCESS_MESSAGE } from "../../constants/success-message";
 import { STATUS_CODE } from "../../constants/status-codes";
 import { OutputHandler } from "../../middlewares/outputHandler-middleware";
@@ -28,7 +28,7 @@ export const getSnapshot = async (req: Request, res: Response, next: NextFunctio
         const userId = (req.user as any).id;
         const roomId = (req as any).room._id;
 
-        const result = await snapshotServices.getSnapshot(userId, roomId);
+        const result = await snapshotServices.getSnapshot(roomId);
 
         (res as any).result = { data: result, message: SUCCESS_MESSAGE.SNAPSHOT_FETCHED }
 
@@ -39,14 +39,14 @@ export const getSnapshot = async (req: Request, res: Response, next: NextFunctio
     }
 }
 
-export const updateSnapshot = async (req: Request, res: Response, next: NextFunction) => {
+export const restoreSnapshot = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId = (req.user as any).id;
+
         const roomId = (req as any).room._id;
         const snapshotId = req.params.snapshot_id as string;
-        const data: IUPDATESnapShotDTO = req.body;
 
-        const result = await snapshotServices.updateSnapshot(data, userId, roomId, snapshotId);
+
+        const result = await snapshotServices.restoreSnapshot(roomId, snapshotId);
 
         (res as any).result = { data: result, message: SUCCESS_MESSAGE.SNAPSHOT_UPDATED }
 
@@ -56,3 +56,5 @@ export const updateSnapshot = async (req: Request, res: Response, next: NextFunc
         next(error)
     }
 }
+
+
