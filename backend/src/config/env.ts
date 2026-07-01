@@ -16,5 +16,6 @@ export const ENV = {
     CLOUD_NAME: process.env.CLOUD_NAME as string,
     CLOUD_API_KEY: process.env.CLOUD_API_KEY as string,
     CLOUD_API_SECRET: process.env.CLOUD_API_SECRET as string,
-    SERVER_URL:process.env.SERVER_URL as string
+    SERVER_URL: process.env.SERVER_URL as string,
+    CLIENT_URL: process.env.CLIENT_URL as string,
 }
