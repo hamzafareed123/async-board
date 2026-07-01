@@ -9,13 +9,15 @@ import roomRoute from "./modules/room/room.route";
 import elementRoute from "./modules/element/element-route";
 import snapshotRoute from "./modules/snapshot/snapshot-route";
 import { OutputHandler } from "./middlewares/outputHandler-middleware";
+import { app,io,server } from "./config/socket";
+import { registerSocketHandler } from "./socket/socket-handler";
 
 
 // TODO 
  // setup socket.io
 
 dbConnect();
-const app = express();
+
 
 app.use(helmet());
 app.use(cookieParser());
@@ -42,6 +44,8 @@ app.use((error: any, req: any, res: any, next: any) => {
 });
 
 
-app.listen(ENV.PORT, () => {
+registerSocketHandler(io);
+
+server.listen(ENV.PORT, () => {
   console.log(`Server is running on port ${ENV.PORT}`)
 })
