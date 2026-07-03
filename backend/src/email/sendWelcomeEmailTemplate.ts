@@ -1,3 +1,4 @@
+import { ENV } from "../config/env"
 export const sendWelcomeEmailTemplate = (
   email: string,
   userName: string
@@ -23,98 +24,120 @@ export const sendWelcomeEmailTemplate = (
               background:#FFFFFF;
               border-radius:12px;
               overflow:hidden;
-              box-shadow:0 4px 12px rgba(0,0,0,0.08);
+              border:1px solid #E5E7EB;
             "
           >
             <!-- Header -->
             <tr>
               <td
                 align="center"
-                style="
-                  background:linear-gradient(135deg,#810B38,#6366F1);
-                  padding:40px 20px;
-                "
+                style="background:#6366F1;padding:36px 20px;"
               >
-                <h1
-                  style="
-                    margin:0;
-                    color:#FFFFFF;
-                    font-size:32px;
-                    font-weight:700;
-                  "
-                >
+                <h1 style="margin:0;color:#FFFFFF;font-size:26px;font-weight:700;letter-spacing:-0.5px;">
                   Async Board
                 </h1>
+                <p style="margin:6px 0 0;color:#EEF2FF;font-size:13px;">
+                  Real-time collaborative whiteboard
+                </p>
+              </td>
+            </tr>
+
+            <!-- Welcome banner -->
+            <tr>
+              <td style="background:#EEF2FF;padding:20px 40px;border-bottom:1px solid #E5E7EB;">
+                <p style="margin:0;color:#4F46E5;font-size:15px;font-weight:600;text-align:center;">
+                   Your account has been created successfully
+                </p>
               </td>
             </tr>
 
             <!-- Content -->
             <tr>
               <td style="padding:40px;">
-                <h2
-                  style="
-                    color:#111827;
-                    margin-top:0;
-                    font-size:24px;
-                  "
-                >
-                  Welcome, ${userName}! 
+                <h2 style="color:#111827;margin-top:0;font-size:22px;font-weight:600;">
+                  Welcome, ${userName}!
                 </h2>
 
-                <p
-                  style="
-                    color:#4B5563;
-                    font-size:16px;
-                    line-height:1.7;
-                  "
-                >
-                  Thanks for joining Async Board. We're excited to have you
-                  onboard.
+                <p style="color:#6B7280;font-size:15px;line-height:1.7;margin-bottom:16px;">
+                  Thanks for joining Async Board. We're excited to have you onboard.
                 </p>
 
-                <p
-                  style="
-                    color:#4B5563;
-                    font-size:16px;
-                    line-height:1.7;
-                  "
-                >
+                <p style="color:#6B7280;font-size:15px;line-height:1.7;margin-bottom:28px;">
                   Async Board helps teams collaborate visually, share ideas,
-                  organize workflows, and stay aligned—whether working in real
+                  organize workflows, and stay aligned — whether working in real
                   time or asynchronously.
                 </p>
 
-                <div style="text-align:center;margin:40px 0;">
-                  <a
-                    href="https://your-domain.com/dashboard"
-                    style="
-                      background:#810B38;
-                      color:#FFFFFF;
-                      text-decoration:none;
-                      padding:14px 28px;
-                      border-radius:8px;
-                      font-weight:600;
-                      display:inline-block;
-                    "
-                  >
-                    Open Async Board
-                  </a>
+                <!-- Features -->
+                <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:24px;margin-bottom:32px;">
+                  <p style="margin:0 0 14px;color:#111827;font-size:14px;font-weight:600;">
+                    What you can do with Async Board:
+                  </p>
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="padding:6px 0;">
+                        <p style="margin:0;color:#6B7280;font-size:14px;">
+                           &nbsp; Draw and collaborate on infinite canvas
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:6px 0;">
+                        <p style="margin:0;color:#6B7280;font-size:14px;">
+                           &nbsp; Invite team members to rooms
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:6px 0;">
+                        <p style="margin:0;color:#6B7280;font-size:14px;">
+                           &nbsp; Sync changes in real time
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:6px 0;">
+                        <p style="margin:0;color:#6B7280;font-size:14px;">
+                           &nbsp; Save and restore board snapshots
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
                 </div>
 
-               
-                <p
-                  style="
-                    margin-top:30px;
-                    color:#4B5563;
-                    font-size:16px;
-                    line-height:1.7;
-                  "
-                >
-                  If you have any questions, just reply to this email. Our team
-                  is here to help.
-                </p>
+                <!-- CTA Button -->
+                <div style="text-align:center;margin-bottom:32px;">
+                  <a
+    href="${ENV.CLIENT_URL}/dashboard"
+    style="
+      background:#6366F1;
+      color:#FFFFFF;
+      text-decoration:none;
+      padding:14px 36px;
+      border-radius:8px;
+      font-weight:600;
+      font-size:15px;
+      display:inline-block;
+    "
+  >
+    Open Async Board →
+  </>
+</div>
 
-                <p style="color:#111827;font-weight:600;">
+                <!-- Help notice -->
+                <div style="
+                  background:#F9FAFB;
+                  border:1px solid #E5E7EB;
+                  border-radius:8px;
+                  padding:14px 18px;
+                  margin-bottom:28px;
+                ">
+                  <p style="margin:0;color:#6B7280;font-size:14px;line-height:1.6;">
+                     Have questions? Just reply to this email — our team is here to help.
+                  </p>
+                </div>
+
+                <p style="margin:0;color:#111827;font-size:14px;font-weight:600;">
                   The Async Board Team
                 </p>
               </td>
@@ -125,14 +148,17 @@ export const sendWelcomeEmailTemplate = (
               <td
                 align="center"
                 style="
-                  background:#F8FAFC;
+                  background:#F9FAFB;
                   padding:20px;
-                  color:#6B7280;
-                  font-size:14px;
                   border-top:1px solid #E5E7EB;
                 "
               >
-                © ${new Date().getFullYear()} Async Board. All rights reserved.
+                <p style="margin:0;color:#9CA3AF;font-size:13px;">
+                  © ${new Date().getFullYear()} Async Board. All rights reserved.
+                </p>
+                <p style="margin:6px 0 0;color:#9CA3AF;font-size:12px;">
+                  You received this email because you created an account on Async Board.
+                </p>
               </td>
             </tr>
           </table>
