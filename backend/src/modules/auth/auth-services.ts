@@ -1,4 +1,13 @@
-import { IAuthResponse, ISignUPDTO, ILoginDTO, IForgotPasswordDTO, IOTPDTO, IResetPasswordDTO, IUpdateProfileDTO, IUser } from "../../types/auth-types";
+import {
+    IAuthResponse,
+    ISignUPDTO,
+    ILoginDTO,
+    IForgotPasswordDTO,
+    IOTPDTO,
+    IResetPasswordDTO,
+    IUpdateProfileDTO,
+    IUser
+} from "../../types/auth-types";
 import { customError } from "../../utils/custom-error";
 import { authRepository } from "./auth-repositories";
 import { ERROR_MESSAGE } from "../../constants/error-message"

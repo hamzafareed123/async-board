@@ -5,139 +5,63 @@ export const otpEmailTemplate = (otp: string) => {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify Your Account</title>
+    <title>Your OTP Code</title>
   </head>
 
-  <body style="margin:0;padding:0;background:#FAFAFA;font-family:Arial,sans-serif;">
+  <body style="margin:0;padding:0;background:#F4F4F5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr>
-        <td align="center" style="padding:40px 20px;">
-          <table
-            width="600"
-            cellpadding="0"
-            cellspacing="0"
-            style="
-              background:#FFFFFF;
-              border-radius:12px;
-              overflow:hidden;
-              border:1px solid #E5E7EB;
-            "
-          >
-            <!-- Header -->
+        <td align="center" style="padding:48px 20px;">
+          <table width="480" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border-radius:16px;overflow:hidden;">
+
+            <!-- Logo area -->
             <tr>
-              <td
-                align="center"
-                style="
-                  background:#810B38;
-                  padding:30px;
-                "
-              >
-                <h1
-                  style="
-                    margin:0;
-                    color:#FFFFFF;
-                    font-size:28px;
-                    font-weight:700;
-                  "
-                >
+              <td style="padding:32px 40px 0;">
+                <p style="margin:0;font-size:18px;font-weight:700;color:#6366F1;">
                   Async Board
-                </h1>
+                </p>
               </td>
             </tr>
 
             <!-- Content -->
             <tr>
-              <td style="padding:40px;">
-                <h2
-                  style="
-                    margin-top:0;
-                    color:#1F2937;
-                    font-size:24px;
-                  "
-                >
-                  Verify Your Account
-                </h2>
+              <td style="padding:32px 40px 40px;">
 
-                <p
-                  style="
-                    color:#6B7280;
-                    font-size:16px;
-                    line-height:1.7;
-                  "
-                >
-                  Use the verification code below to complete your request.
+                <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#111827;">
+                  Your verification code
+                </h1>
+
+                <p style="margin:0 0 32px;font-size:15px;color:#6B7280;line-height:1.6;">
+                  Enter this code to verify your identity. It expires in 10 minutes.
                 </p>
 
-                <div
-                  style="
-                    text-align:center;
-                    margin:30px 0;
-                  "
-                >
-                  <div
-                    style="
-                      display:inline-block;
-                      padding:16px 32px;
-                      background:#F8F9FA;
-                      border:2px dashed #810B38;
-                      border-radius:10px;
-                      font-size:32px;
-                      font-weight:700;
-                      letter-spacing:8px;
-                      color:#810B38;
-                    "
-                  >
+                <!-- OTP -->
+                <div style="background:#F9FAFB;border-radius:12px;padding:28px;text-align:center;margin-bottom:32px;">
+                  <p style="margin:0;font-size:40px;font-weight:800;letter-spacing:12px;color:#111827;">
                     ${otp}
-                  </div>
+                  </p>
                 </div>
 
-                <p
-                  style="
-                    color:#6B7280;
-                    font-size:15px;
-                    line-height:1.7;
-                  "
-                >
-                  This code will expire in <strong>10 minutes</strong>.
+                <p style="margin:0 0 6px;font-size:13px;color:#9CA3AF;">
+                  Didn't request this? You can safely ignore this email.
                 </p>
 
-                <p
-                  style="
-                    color:#6B7280;
-                    font-size:15px;
-                    line-height:1.7;
-                  "
-                >
-                  If you didn't request this code, you can safely ignore this email.
+                <p style="margin:0;font-size:13px;color:#9CA3AF;">
+                  Never share this code with anyone.
                 </p>
 
-                <p
-                  style="
-                    margin-top:30px;
-                    color:#1F2937;
-                    font-weight:600;
-                  "
-                >
-                  Async Board Team
-                </p>
               </td>
             </tr>
 
             <!-- Footer -->
             <tr>
-              <td
-                align="center"
-                style="
-                  background:#F8F9FA;
-                  padding:20px;
-                  color:#6B7280;
-                  font-size:14px;
-                  border-top:1px solid #E5E7EB;
-                "
-              >
-                © ${new Date().getFullYear()} Async Board. All rights reserved.
+              <td style="padding:20px 40px;border-top:1px solid #F4F4F5;">
+                <p style="margin:0;font-size:12px;color:#D1D5DB;">
+                  © ${new Date().getFullYear()} Async Board
+                </p>
               </td>
             </tr>
+
           </table>
         </td>
       </tr>
