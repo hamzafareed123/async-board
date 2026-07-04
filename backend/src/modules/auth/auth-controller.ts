@@ -164,3 +164,23 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         next(error)
     }
 }
+
+export const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const token = req.cookies.refreshToken;
+
+    const { accessToken } = await authServices.refreshToken(token);
+
+    (res as any).result = {
+      data: { accessToken: accessToken },
+      message: SUCCESS_MESSAGE.REFRESH_TOKEN,
+    };
+    OutputHandler(STATUS_CODE.OK, req, res, next);
+  } catch (error) {
+    next(error)
+  }
+};
