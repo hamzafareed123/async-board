@@ -6,6 +6,7 @@ export const SUCCESS_MESSAGE = {
     PASSWORD_RESET_SUCCESS: "Password Reset Successfully",
     OTP_SENT: "If that email exists, an OTP has been sent",
     OTP_VERIFIED: "OTP successfully Verified",
+    REFRESH_TOKEN:"Token is Refreshed",
     AUTH_USER_FETCHED: "Authenticated user retrieved successfully",
     PROFILE_UPDATED: "Profile Updated Successfully",
 

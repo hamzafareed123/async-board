@@ -31,6 +31,9 @@ export const authRepository = {
         await RefreshToken.deleteOne({ token });
     },
 
+    async findRefreshToken(token: string) {
+        return await RefreshToken.findOne({ token });
+    },
     async generateOTP(userId: string): Promise<string> {
         const otp = crypto.randomInt(100000, 999999).toString();
         const hashOtp = await bcrypt.hash(otp, 10);

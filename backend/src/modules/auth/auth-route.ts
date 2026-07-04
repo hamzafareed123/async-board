@@ -15,7 +15,8 @@ import {
     getAuthUser,
     verifyOTP,
     resetPassword,
-    updateProfile
+    updateProfile,
+    refreshToken
 } from "./auth-controller";
 import { validateRequest } from "../../middlewares/validation-middleware";
 import { protectedRoute } from "../../middlewares/auth-middleware";
@@ -40,6 +41,7 @@ router.patch(
     validateRequest(updateProfileSchema),
     updateProfile
 )
+router.post("/refresh-token",refreshToken)
 
 
 

@@ -6,7 +6,6 @@ import {
     IOTPDTO,
     IResetPasswordDTO,
     IUpdateProfileDTO,
-    IUser
 } from "../../types/auth-types";
 import { customError } from "../../utils/custom-error";
 import { authRepository } from "./auth-repositories";
@@ -198,6 +197,29 @@ export const authServices = {
         }
 
         return { user: mapUser(updatedProfile) };
-    }
+    },
 
-};
+    async refreshToken(token: string,): Promise<{ accessToken: string }> {
+
+        if (!token) {
+            throw new customError(ERROR_MESSAGE.NO_TOKEN_FOUND, STATUS_CODE.UNAUTHORIZED);
+        }
+
+        let decode: { userId: string };
+
+        try {
+            decode = jwt.verify(token, ENV.REFRESH_TOKEN_SECRET_KEY) as { userId: string }
+        } catch {
+            throw new customError(ERROR_MESSAGE.NO_TOKEN_FOUND, STATUS_CODE.UNAUTHORIZED)
+        }
+
+        const storedToken = await authRepository.findRefreshToken(token);
+        if (!storedToken) throw new customError("Invalid Refresh Token", STATUS_CODE.UNAUTHORIZED);
+
+
+        const accessToken = generateToken(decode.userId, ENV.ACCESS_TOKEN_SECRET_KEY, "15m")
+        return { accessToken };
+
+
+    }
+}
