@@ -49,4 +49,5 @@ export interface IResetPasswordDTO {
 export interface IUpdateProfileDTO {
     fullName?: string;
     cursorColor?: string;
+    avatar?:File
 }
