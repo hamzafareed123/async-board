@@ -68,7 +68,10 @@ export const roomServices = {
         }
 
         return room.members;
-    }
+    },
+    async getUserRooms(userId: string) {
+    return await roomRepository.getUserRooms(userId);
+}
 }
 
 

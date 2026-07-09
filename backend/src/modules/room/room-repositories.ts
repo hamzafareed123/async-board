@@ -57,6 +57,12 @@ export const roomRepository = {
 
     async findRoomById(room_id: string) {
         return await Room.findById(room_id);
+    },
+
+    async getUserRooms(userId: string) {
+        return await Room.find({
+            "members.userId": userId
+        }).sort({ createdAt: -1 });
     }
 }
 
