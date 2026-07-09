@@ -62,3 +62,15 @@ export const getRoomMembers = async (req: Request, res: Response, next: NextFunc
         next(error)
     }
 }
+
+export const getUserRooms = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = (req.user as any).id;
+        const rooms = await roomServices.getUserRooms(userId);
+
+        (res as any).result = { data: rooms, message: SUCCESS_MESSAGE.ROOM_FETCHED };
+        OutputHandler(STATUS_CODE.OK, req, res, next);
+    } catch (error) {
+        next(error);
+    }
+}
