@@ -39,12 +39,14 @@ export const useAuthStore = create<IAuthStore>((set) => ({
 
     checkAuth: async () => {
         try {
+            set({ isCheckingAuth: true })
             const response = await authServices.authUser();
             set({ authUser: response.data });
         } catch {
             set({ authUser: null });
         } finally {
             set({ isCheckingAuth: false });
+
         }
     },
 
