@@ -1,82 +1,82 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import FormInput from './FormInput'
-import Button from '../ui/Button'
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import FormInput from "./FormInput";
+import Button from "../ui/button";
+import { useAuthStore } from "../../store/auth-store";
 
 interface AuthFormValues {
-  name?: string
-  email: string
-  password: string
-  confirmPassword?: string
+  fullName?: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 interface AuthFormProps {
-  mode: 'login' | 'signup'
-  onSubmit: (values: AuthFormValues) => Promise<void> | void
+  mode: "login" | "signup";
+  onSubmit: (values: AuthFormValues) => Promise<void> | void;
 }
 
 const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
-  const isSignup = mode === 'signup'
+  const isSignup = mode === "signup";
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(false)
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { isLoading } = useAuthStore();
 
   const validate = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (isSignup && !name.trim()) {
-      newErrors.name = 'Name is required'
+      newErrors.name = "Name is required";
     }
 
     if (!email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Enter a valid email'
+      newErrors.email = "Enter a valid email";
     }
 
     if (!password) {
-      newErrors.password = 'Password is required'
-    } else if (isSignup && password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
+      newErrors.password = "Password is required";
+    } else if (isSignup && password.length < 5) {
+      newErrors.password = "Password must be at least 5 characters";
     }
 
     if (isSignup && confirmPassword !== password) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validate()) return
+    e.preventDefault();
+    if (!validate()) return;
 
-    setIsLoading(true)
-    try {
-      await onSubmit({
-        name: isSignup ? name : undefined,
-        email,
-        password,
-        confirmPassword: isSignup ? confirmPassword : undefined,
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
+    await onSubmit({
+      fullName: isSignup ? name : undefined,
+      email,
+      password,
+      confirmPassword: isSignup ? confirmPassword : undefined,
+    });
+  };
   return (
     <div className="w-full max-w-sm mx-auto">
       <div className="mb-6 text-center">
         <h1 className="text-xl font-semibold text-text-primary">
-          {isSignup ? 'Create your account' : 'Welcome back'}
+          {isSignup ? "Create your account" : "Welcome back"}
         </h1>
         <p className="mt-1 text-sm text-text-secondary">
-          {isSignup ? 'Start building boards with your team.' : 'Log in to continue to sync-board.'}
+          {isSignup
+            ? "Start building boards with your team."
+            : "Log in to continue to sync-board."}
         </p>
       </div>
 
@@ -110,6 +110,17 @@ const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
           error={errors.password}
         />
 
+        {!isSignup && (
+          <div className="text-right">
+            <Link
+              to="/forgot-password"
+              className="text-xs text-primary hover:text-primary-hover"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        )}
+
         {isSignup && (
           <FormInput
             label="Confirm password"
@@ -122,7 +133,7 @@ const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
         )}
 
         <Button
-          label={isSignup ? 'Sign up' : 'Log in'}
+          label={isSignup ? "Sign up" : "Log in"}
           type="submit"
           isLoading={isLoading}
           onClick={() => {}}
@@ -130,16 +141,16 @@ const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
       </form>
 
       <p className="mt-6 text-center text-sm text-text-secondary">
-        {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
+        {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
         <Link
-          to={isSignup ? '/login' : '/signup'}
+          to={isSignup ? "/login" : "/signup"}
           className="font-medium text-primary hover:text-primary-hover"
         >
-          {isSignup ? 'Log in' : 'Sign up'}
+          {isSignup ? "Log in" : "Sign up"}
         </Link>
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default AuthForm
+export default AuthForm;

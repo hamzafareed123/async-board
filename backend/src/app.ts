@@ -9,12 +9,10 @@ import roomRoute from "./modules/room/room.route";
 import elementRoute from "./modules/element/element-route";
 import snapshotRoute from "./modules/snapshot/snapshot-route";
 import { OutputHandler } from "./middlewares/outputHandler-middleware";
-import { app,io,server } from "./config/socket";
+import { app, io, server } from "./config/socket";
 import { registerSocketHandler } from "./socket/socket-handler";
+import cors from "cors"
 
-
-// TODO 
- // setup socket.io
 
 dbConnect();
 
@@ -25,10 +23,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(morgan("dev"));
 
+app.use(
+  cors({
+    origin: ENV.CLIENT_URL,
+    credentials: true,
+  }),
+);
+
 app.use("/api/auth", authRoute);
 app.use("/api/room", roomRoute);
 app.use("/api/element", elementRoute);
-app.use("/api/snapshot",snapshotRoute)
+app.use("/api/snapshot", snapshotRoute)
 
 app.use((error: any, req: any, res: any, next: any) => {
   (res as any).error = error;

@@ -4,11 +4,11 @@ import type { IAuthResponse, IForgotPasswordDTO, ILoginDTO, IRegisterDTO, IReset
 export const authServices = {
     signup: async (credential: IRegisterDTO): Promise<IAuthResponse> => {
         const response = await apiClient.post("/api/auth/signup", credential)
-        return response.data;
+        return response.data.data;
     },
     login: async (credential: ILoginDTO): Promise<IAuthResponse> => {
         const response = await apiClient.post("/api/auth/login", credential)
-        return response.data;
+        return response.data.data;
     },
 
     logout: async () => {
@@ -33,6 +33,7 @@ export const authServices = {
 
     authUser: async () => {
         const response = await apiClient.get("/api/auth/auth-user")
+        console.log("data",response.data)
         return response.data
     },
 
@@ -45,7 +46,7 @@ export const authServices = {
         const response = await apiClient.patch("/api/auth/update-profile", formData, {
             headers: { "Content-Type": "multipart/form-data" }
         });
-        return response.data;
+        return response.data.data;
     }
 
 }
