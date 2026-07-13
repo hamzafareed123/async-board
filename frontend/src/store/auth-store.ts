@@ -5,10 +5,7 @@ import type {
     ILoginDTO,
     IUser,
     IRegisterDTO,
-    IForgotPasswordDTO,
-    IResetPasswordDTO,
     IUpdateProfileDTO,
-    IVerifyOtpDTO,
 } from "../types/auth-types";
 
 interface IAuthStore {
@@ -25,9 +22,6 @@ interface IAuthStore {
     signup: (data: IRegisterDTO) => Promise<void>;
     logout: () => Promise<void>;
 
-    forgotPassword: (data: IForgotPasswordDTO) => Promise<void>;
-    verifyOTP: (data: IVerifyOtpDTO) => Promise<void>;
-    resetPassword: (data: IResetPasswordDTO) => Promise<void>;
     updateProfile: (data: IUpdateProfileDTO) => Promise<void>;
 }
 
@@ -100,36 +94,6 @@ export const useAuthStore = create<IAuthStore>((set) => ({
                 authUser: null,
                 accessToken: null,
             });
-        }
-    },
-
-    forgotPassword: async (data) => {
-        set({ isLoading: true });
-
-        try {
-            await authServices.forgotPassword(data);
-        } finally {
-            set({ isLoading: false });
-        }
-    },
-
-    verifyOTP: async (data) => {
-        set({ isLoading: true });
-
-        try {
-            await authServices.verifyOTP(data);
-        } finally {
-            set({ isLoading: false });
-        }
-    },
-
-    resetPassword: async (data) => {
-        set({ isLoading: true });
-
-        try {
-            return await authServices.resetPassword(data);
-        } finally {
-            set({ isLoading: false });
         }
     },
 

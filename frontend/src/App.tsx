@@ -6,6 +6,7 @@ import SignupPage from "./pages/auth/SignupPage";
 import ProtectedRoute from "./components/routes/ProtectedRoute";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import { useAuthStore } from "./store/auth-store";
+import ForgotPasswordPage from "./pages/auth/forgot-password/ForgotPasswordPage";
 
 const App = () => {
   const { checkAuth } = useAuthStore();
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
         <Route
           path="/dashboard"
           element={

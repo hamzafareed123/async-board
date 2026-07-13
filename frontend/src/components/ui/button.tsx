@@ -1,5 +1,3 @@
-import React from 'react'
-
 interface ButtonProps {
   label: string
   onClick: () => void
@@ -31,7 +29,7 @@ const Button = ({
       onClick={onClick}
       disabled={isDisabled}
       className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
-        transition disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]}`}
+        transition disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${variantClasses[variant]}`}
     >
       {isLoading && (
         <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
