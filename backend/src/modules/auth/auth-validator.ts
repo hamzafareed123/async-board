@@ -1,10 +1,9 @@
 import Joi from "joi";
 
 export const signUpSchema = Joi.object({
-  fullName: Joi.string().trim().pattern(/^[a-zA-Z\s]+$/).required().messages({
+  fullName: Joi.string().trim().required().messages({
     "string.empty": "Full Name is Required",
-    "any.required": "Full Name is required",
-    "string.pattern.base": "Full name can only contain letters"
+    "any.required": "Full Name is required"
   }),
 
   email: Joi.string().email().required().messages({

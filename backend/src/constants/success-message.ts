@@ -10,7 +10,7 @@ export const SUCCESS_MESSAGE = {
     AUTH_USER_FETCHED: "Authenticated user retrieved successfully",
     PROFILE_UPDATED: "Profile Updated Successfully",
 
-    // Room
+     // Room
     ROOM_CREATED: "Room Created Successfully",
     ROOM_JOIN: "Successfully Joined Room",
     ROOM_DELETED: "Room Deleted Successfully",
