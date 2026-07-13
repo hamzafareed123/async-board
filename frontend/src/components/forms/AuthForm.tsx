@@ -67,16 +67,20 @@ const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
       confirmPassword: isSignup ? confirmPassword : undefined,
     });
   };
+
   return (
-    <div className="w-full max-w-sm mx-auto">
+    <div className="w-full rounded-[24px] border border-border/70 bg-surface p-6 shadow-sm sm:p-8">
       <div className="mb-6 text-center">
-        <h1 className="text-xl font-semibold text-text-primary">
+        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+          SyncBoard
+        </p>
+        <h1 className="mt-3 text-2xl font-semibold text-text-primary">
           {isSignup ? "Create your account" : "Welcome back"}
         </h1>
-        <p className="mt-1 text-sm text-text-secondary">
+        <p className="mt-2 text-sm leading-6 text-text-secondary">
           {isSignup
             ? "Start building boards with your team."
-            : "Log in to continue to sync-board."}
+            : "Log in to continue to your workspace."}
         </p>
       </div>
 
@@ -114,7 +118,7 @@ const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
           <div className="text-right">
             <Link
               to="/forgot-password"
-              className="text-xs text-primary hover:text-primary-hover"
+              className="text-xs font-medium text-primary transition hover:text-primary-hover"
             >
               Forgot password?
             </Link>
@@ -144,7 +148,7 @@ const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
         {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
         <Link
           to={isSignup ? "/login" : "/signup"}
-          className="font-medium text-primary hover:text-primary-hover"
+          className="font-semibold text-primary transition hover:text-primary-hover"
         >
           {isSignup ? "Log in" : "Sign up"}
         </Link>

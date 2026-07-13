@@ -3,7 +3,7 @@ import React from 'react'
 interface FormInputProps {
   label: string
   type: 'text' | 'email' | 'password'
-  placeholder: string
+  placeholder?: string
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   error?: string
@@ -18,8 +18,8 @@ const FormInput = ({ label, type, placeholder, value, onChange, error }: FormInp
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`px-3 py-2.5 rounded-lg text-sm text-text-primary bg-surface border outline-none transition
-          focus:ring-2 focus:ring-primary/20 focus:border-border-focus
+        className={`w-full rounded-xl border bg-surface px-3.5 py-3 text-sm text-text-primary shadow-sm outline-none transition
+          placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15
           ${error ? 'border-error' : 'border-border'}`}
       />
       {error && <span className="text-xs text-error">{error}</span>}
