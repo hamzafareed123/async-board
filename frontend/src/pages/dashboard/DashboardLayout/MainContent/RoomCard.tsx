@@ -4,7 +4,7 @@ import type { IRoom } from "../../../../types/room-types";
 interface RoomCardProps {
   room: IRoom;
   onDelete: (id: string) => void;
-  onClick: () => void;
+  onClick?: () => void;
   currentUserId: string;
 }
 
@@ -19,7 +19,7 @@ const RoomCard = ({
   );
 
   const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation(); // ← stops card click from firing
+    e.stopPropagation();
     onDelete(room._id);
   };
 
