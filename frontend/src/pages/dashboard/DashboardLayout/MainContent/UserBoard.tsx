@@ -15,7 +15,7 @@ const UserBoard = ({ openCreateModal }: UserBoard) => {
   return (
     <div>
       {rooms.length === 0 ? (
-        <div className="rounded-3xl border border-border bg-white p-8 shadow-sm">
+        <div className="rounded-3xl border border-border bg-surface p-8 shadow-sm">
           <EmptyState
             title="No boards yet"
             description="Create your first board to get started"

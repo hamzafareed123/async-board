@@ -24,13 +24,13 @@ const LoginPage = () => {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.14),_transparent_40%),linear-gradient(135deg,_#f8faff_0%,_#f5f7ff_100%)] px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-center">
       <div className="w-full max-w-6xl overflow-hidden rounded-[28px] border border-border/70 bg-surface shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
         <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="relative min-h-[280px] overflow-hidden bg-primary-light lg:min-h-[620px]">
+          <div className="relative min-h-70 overflow-hidden bg-primary-light lg:min-h-[620px]">
             <img
               src={collab2}
               alt="Team collaboration illustration"
               className="h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/35 to-slate-900/10" />
+            <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-900/35 to-slate-900/10" />
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white sm:p-8">
               <p className="text-sm font-semibold uppercase tracking-[0.25em] text-indigo-100">
                 SyncBoard

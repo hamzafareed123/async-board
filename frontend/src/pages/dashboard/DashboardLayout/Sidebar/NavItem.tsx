@@ -8,31 +8,35 @@ interface NavItemProps {
 
 const NavItem: React.FC<NavItemProps> = ({ onSelect }) => {
   return (
-    <nav className="navbar flex h-full flex-col items-start gap-6 p-4">
-      <div className="nav-logo w-full">
-        <Link to="/">
-          <Logo />
-        </Link>
-      </div>
+    <nav className="flex h-full flex-col p-6">
+  <div>
+    <Link to="/">
+      <Logo size={120} />
+    </Link>
+  </div>
 
-      <ul className="nav-menu flex w-full flex-1 flex-col gap-2">
-        <li className="nav-item w-full">
-          <button 
-            type="button"
-            onClick={() => onSelect && onSelect("boards")}
-            className="w-full text-left nav-link cursor-pointer"
-          >
-            My Boards
-          </button>
-        </li>
-        <li className="nav-item mt-auto w-full">
-          <Link to="/profile" className="nav-link flex items-center gap-2 cursor-pointer">
-            <UserAvatar />
-            <span className="hidden sm:inline">Profile</span>
-          </Link>
-        </li>
-      </ul>
-    </nav>
+  <ul className="mt-10 flex flex-1 flex-col">
+    <li>
+      <button
+        type="button"
+        onClick={() => onSelect?.("boards")}
+        className="w-full cursor-pointer rounded-lg px-4 py-3 text-left text-text-primary transition hover:bg-surface-2"
+      >
+        My Boards
+      </button>
+    </li>
+
+    <li className="mt-auto">
+      <Link
+        to="/profile"
+        className="flex items-center gap-3 rounded-lg px-4 py-3 text-text-primary transition hover:bg-surface-2"
+      >
+        <UserAvatar />
+        <span>Profile</span>
+      </Link>
+    </li>
+  </ul>
+</nav>
   );
 };
 
