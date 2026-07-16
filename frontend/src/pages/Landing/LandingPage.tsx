@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom";
 import heroImage from "../../assets/heroImage.png";
+import Logo from "../dashboard/DashboardLayout/Sidebar/Logo";
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
       <nav className="flex items-center justify-between px-8 py-4 border-b border-border">
-        <span className="text-lg font-semibold text-text-primary">sync-board</span>
+        <span className="text-lg font-semibold text-text-primary">
+          sync-board
+        </span>
         <div className="flex items-center gap-3">
           <Link
             to="/login"
@@ -33,7 +36,8 @@ const LandingPage = () => {
               Build, sketch, and collaborate in one shared board.
             </h1>
             <p className="max-w-2xl text-base leading-8 text-text-secondary sm:text-lg">
-              sync-board helps teams capture ideas, organize projects, and stay aligned with live drawing, board management, and instant feedback.
+              sync-board helps teams capture ideas, organize projects, and stay
+              aligned with live drawing, board management, and instant feedback.
             </p>
           </div>
 
@@ -54,23 +58,39 @@ const LandingPage = () => {
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
-              <p className="text-sm font-semibold text-text-primary">Live collaboration</p>
-              <p className="mt-2 text-sm text-text-secondary">Work together in real time with instant updates.</p>
+              <p className="text-sm font-semibold text-text-primary">
+                Live collaboration
+              </p>
+              <p className="mt-2 text-sm text-text-secondary">
+                Work together in real time with instant updates.
+              </p>
             </div>
             <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
-              <p className="text-sm font-semibold text-text-primary">Unlimited boards</p>
-              <p className="mt-2 text-sm text-text-secondary">Create as many spaces as your team needs.</p>
+              <p className="text-sm font-semibold text-text-primary">
+                Unlimited boards
+              </p>
+              <p className="mt-2 text-sm text-text-secondary">
+                Create as many spaces as your team needs.
+              </p>
             </div>
             <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
-              <p className="text-sm font-semibold text-text-primary">Secure sharing</p>
-              <p className="mt-2 text-sm text-text-secondary">Share boards with your team safely and easily.</p>
+              <p className="text-sm font-semibold text-text-primary">
+                Secure sharing
+              </p>
+              <p className="mt-2 text-sm text-text-secondary">
+                Share boards with your team safely and easily.
+              </p>
             </div>
           </div>
         </section>
 
         <section className="relative flex items-center justify-center">
           <div className="relative overflow-hidden rounded-[32px] border border-border bg-surface shadow-[0_30px_80px_rgba(15,23,42,0.08)]">
-            <img src={heroImage} alt="Sync board collaboration" className="h-full w-full object-cover" />
+            <img
+              src={heroImage}
+              alt="Sync board collaboration"
+              className="h-full w-full object-cover"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent" />
           </div>
         </section>
@@ -80,15 +100,22 @@ const LandingPage = () => {
         <div className="rounded-[32px] border border-border bg-surface p-8 shadow-sm sm:p-10">
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Why SyncBoard</p>
-              <h2 className="text-2xl font-semibold text-text-primary">Everything your team needs to plan, design, and deliver together.</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+                Why SyncBoard
+              </p>
+              <h2 className="text-2xl font-semibold text-text-primary">
+                Everything your team needs to plan, design, and deliver
+                together.
+              </h2>
             </div>
             <div className="space-y-4">
               <p className="text-sm leading-7 text-text-secondary">
-                Whiteboard-style drawing, board organization, and instant sharing means teams move faster and stay aligned.
+                Whiteboard-style drawing, board organization, and instant
+                sharing means teams move faster and stay aligned.
               </p>
               <p className="text-sm leading-7 text-text-secondary">
-                Invite teammates, create shared spaces, and keep ideas flowing from concept to completion.
+                Invite teammates, create shared spaces, and keep ideas flowing
+                from concept to completion.
               </p>
             </div>
             <div className="flex items-center justify-center">
@@ -102,8 +129,21 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-    </div>
-  )
-}
+      <footer className="border-t border-border py-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <Logo size={120} />
 
-export default LandingPage
+          <div className="flex gap-6">
+            <Link to="/">Home</Link>
+            <Link to="/about">About</Link>
+            <Link to="/contact">Contact</Link>
+          </div>
+
+          <p className="text-sm text-text-secondary">© 2026 SyncBoard</p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;
