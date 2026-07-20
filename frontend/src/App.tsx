@@ -15,6 +15,11 @@ const App = () => {
     checkAuth();
   }, [checkAuth]);
 
+
+  // TODO 
+  // set user profile issue
+  // set sidebar alignment issues
+  // set editor 
   return (
     <BrowserRouter>
       <Routes>

@@ -7,6 +7,7 @@ interface IRoomStore {
     room: IRoom | null;
     rooms: IRoom[];
     members: IMember[];
+    inviteLink : string | null;
 
     createRoom: (data: ICreateRoomDTO) => Promise<void>;
     deleteRoom: (roomId: string) => Promise<void>;
@@ -18,6 +19,7 @@ export const useRoomStore = create<IRoomStore>((set) => ({
     room: null,
     rooms: [],
     members: [],
+    inviteLink:null,
 
 
     createRoom: async (data) => {
@@ -26,8 +28,11 @@ export const useRoomStore = create<IRoomStore>((set) => ({
             const response = await roomServices.createRoom(data);
             set((state) => ({
                 rooms: [...state.rooms, response.data.room],
-                room: response.data.room
+                room: response.data.room,
+                inviteLink:response.data.inviteLink
+               
             }));
+            
         } finally {
             set({ isLoading: false });
         }

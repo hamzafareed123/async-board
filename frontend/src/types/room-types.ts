@@ -29,6 +29,6 @@ export interface ICreateRoomDTO {
     name: string;
     description?: string;
     isPublic?: boolean;
-    maxMembers?: number;
-    expiresAt?: Date;
+    maxMembers: number;
+    expiresAt?: string;
 }

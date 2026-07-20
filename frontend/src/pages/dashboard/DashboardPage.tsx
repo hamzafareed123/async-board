@@ -5,39 +5,38 @@ import CreateRoomModal from "./DashboardLayout/MainContent/CreateRoomModal";
 import DashboardHeader from "./DashboardLayout/MainContent/DashboardHeader";
 import NavItem from "./DashboardLayout/Sidebar/NavItem";
 import UserBoard from "./DashboardLayout/MainContent/UserBoard";
+import type { ICreateRoomDTO } from "../../types/room-types";
+import RoomCreatedModal from "./DashboardLayout/MainContent/RoomCreatedModal";
+import UserProfile from "./DashboardLayout/MainContent/UserProfile";
+import { useAuthStore } from "../../store/auth-store";
+
+type ModalStatus = "closed" | "create" | "created";
 
 export const DashboardPage = () => {
-  const { getRooms, isLoading, createRoom } = useRoomStore();
+  const { getRooms, isLoading, createRoom, room, inviteLink } = useRoomStore();
+  const { authUser } = useAuthStore();
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
+  const [modalStatus, setModalStatus] = useState<ModalStatus>("closed");
   const [activePanel, setActivePanel] = useState<string>("");
 
   useEffect(() => {
     getRooms();
   }, [getRooms]);
 
-  const openCreateModal = () => setIsCreateModalOpen(true);
-  const closeCreateModal = () => setIsCreateModalOpen(false);
+  const openCreateModal = () => setModalStatus("create");
+  const closeModal = () => setModalStatus("closed");
 
-  const handleCreateRoom = async (data: {
-    name: string;
-    description?: string;
-    isPublic?: boolean;
-  }) => {
+  const handleCreateRoom = async (data: ICreateRoomDTO) => {
     await createRoom(data);
-    closeCreateModal();
+    setModalStatus("created");
   };
-  
 
   if (isLoading) return <div>Loading...</div>;
 
   return (
-  <>
     <main className="min-h-screen bg-background">
       <div className="flex min-h-screen w-full">
-        {/* Sidebar */}
         <aside
           className={`sticky top-0 h-screen shrink-0 border-r border-border bg-surface shadow-sm transition-all duration-200 ${
             isSidebarOpen ? "w-50" : "w-0 overflow-hidden border-r-0"
@@ -60,7 +59,6 @@ export const DashboardPage = () => {
           )}
         </aside>
 
-      
         <section className="flex-1 overflow-y-auto p-8">
           {!isSidebarOpen && (
             <button
@@ -78,17 +76,24 @@ export const DashboardPage = () => {
             {activePanel === "boards" && (
               <UserBoard openCreateModal={openCreateModal} />
             )}
+            {activePanel === "user-profile" && authUser && (
+              <UserProfile authUser={authUser} />
+            )}
           </div>
         </section>
       </div>
 
-      {isCreateModalOpen && (
-        <CreateRoomModal
-          onClose={closeCreateModal}
-          onSubmit={handleCreateRoom}
+      {modalStatus === "create" && (
+        <CreateRoomModal onClose={closeModal} onSubmit={handleCreateRoom} />
+      )}
+
+      {modalStatus === "created" && room && inviteLink && (
+        <RoomCreatedModal
+          room={room}
+          onClose={closeModal}
+          inviteLink={inviteLink}
         />
       )}
     </main>
-  </>
-);
+  );
 };

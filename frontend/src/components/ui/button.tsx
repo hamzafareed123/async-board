@@ -1,6 +1,6 @@
 interface ButtonProps {
   label: string
-  onClick: () => void
+  onClick?: () => void
   variant?: 'primary' | 'secondary' | 'danger'
   disabled?: boolean
   type?: 'button' | 'submit'
