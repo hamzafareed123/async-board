@@ -70,8 +70,17 @@ export const roomServices = {
         return room.members;
     },
     async getUserRooms(userId: string) {
-    return await roomRepository.getUserRooms(userId);
-}
+        return await roomRepository.getUserRooms(userId);
+    },
+    async getRoomById(room_id:string){
+
+        const room = await roomRepository.getRoomById(room_id)
+        if(!room){
+            throw new customError(ERROR_MESSAGE.ROOM_NOT_FOUND,STATUS_CODE.NOT_FOUND)
+        }
+
+        return room;
+    }
 }
 
 

@@ -33,7 +33,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     try {
         const userData = req.body as ILoginDTO;
 
-        
+
 
         const authResponse = await authServices.login(userData);
 
@@ -141,11 +141,9 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
 
 
         const userId = (req.user as any).id
-        const { fullName } = req.body;
+        const { fullName, cursorColor } = req.body;
 
-        
         const file = req.file;
-        console.log("filename",file)
 
         let avatarUrl: string | undefined
 
@@ -154,7 +152,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
             console.log("avatarUrl from cloudinary:", avatarUrl);
         }
 
-        const updatedProfile = await authServices.updateProfile(userId, { fullName, avatarUrl });
+        const updatedProfile = await authServices.updateProfile(userId, { fullName, avatarUrl, cursorColor });
 
 
         (res as any).result = { data: updatedProfile, message: SUCCESS_MESSAGE.PROFILE_UPDATED }
@@ -166,21 +164,21 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
 }
 
 export const refreshToken = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
+    req: Request,
+    res: Response,
+    next: NextFunction,
 ) => {
-  try {
-    const token = req.cookies.refreshToken;
+    try {
+        const token = req.cookies.refreshToken;
 
-    const { accessToken } = await authServices.refreshToken(token);
+        const { accessToken } = await authServices.refreshToken(token);
 
-    (res as any).result = {
-      data: { accessToken: accessToken },
-      message: SUCCESS_MESSAGE.REFRESH_TOKEN,
-    };
-    OutputHandler(STATUS_CODE.OK, req, res, next);
-  } catch (error) {
-    next(error)
-  }
+        (res as any).result = {
+            data: { accessToken: accessToken },
+            message: SUCCESS_MESSAGE.REFRESH_TOKEN,
+        };
+        OutputHandler(STATUS_CODE.OK, req, res, next);
+    } catch (error) {
+        next(error)
+    }
 };
