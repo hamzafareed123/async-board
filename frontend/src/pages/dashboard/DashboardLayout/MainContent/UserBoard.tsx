@@ -2,7 +2,7 @@ import { useRoomStore } from "../../../../store/room-store";
 import RoomCard from "./RoomCard";
 import { useAuthStore } from "../../../../store/auth-store";
 import EmptyState from "./EmptyState";
-
+import { useNavigate } from "react-router-dom";
 
 interface UserBoard {
   openCreateModal: () => void;
@@ -11,6 +11,12 @@ interface UserBoard {
 const UserBoard = ({ openCreateModal }: UserBoard) => {
   const { rooms, deleteRoom } = useRoomStore();
   const { authUser } = useAuthStore();
+
+  const navigate = useNavigate();
+
+  const handleClick = (roomId: string) => {
+    navigate(`/canvas/${roomId}`);
+  };
 
   return (
     <div>
@@ -27,6 +33,7 @@ const UserBoard = ({ openCreateModal }: UserBoard) => {
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {rooms.map((room) => (
             <RoomCard
+              onClick={() => handleClick(room._id)}
               key={room._id}
               room={room}
               currentUserId={authUser?.id || ""}

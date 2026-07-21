@@ -196,6 +196,8 @@ export const authServices = {
             throw new customError(ERROR_MESSAGE.USER_NOT_FOUND, STATUS_CODE.NOT_FOUND);
         }
 
+
+
         return { user: mapUser(updatedProfile) };
     },
 

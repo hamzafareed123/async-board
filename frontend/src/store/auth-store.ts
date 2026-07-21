@@ -102,7 +102,6 @@ export const useAuthStore = create<IAuthStore>((set) => ({
 
         try {
             const response = await authServices.updateProfile(data);
-
             set({
                 authUser: response.user,
             });

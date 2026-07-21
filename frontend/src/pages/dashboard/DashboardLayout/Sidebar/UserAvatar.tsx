@@ -28,7 +28,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
           src={profilePic}
           alt={alt}
           onError={(e) => {
-            // hide broken image and keep fallback icon
+           
             e.currentTarget.style.display = "none";
           }}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}

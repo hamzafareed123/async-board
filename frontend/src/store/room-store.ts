@@ -7,11 +7,12 @@ interface IRoomStore {
     room: IRoom | null;
     rooms: IRoom[];
     members: IMember[];
-    inviteLink : string | null;
+    inviteLink: string | null;
 
     createRoom: (data: ICreateRoomDTO) => Promise<void>;
     deleteRoom: (roomId: string) => Promise<void>;
     getRooms: () => Promise<void>;
+    getRoomById:(roomId:string)=>Promise<void>;
 }
 
 export const useRoomStore = create<IRoomStore>((set) => ({
@@ -19,7 +20,7 @@ export const useRoomStore = create<IRoomStore>((set) => ({
     room: null,
     rooms: [],
     members: [],
-    inviteLink:null,
+    inviteLink: null,
 
 
     createRoom: async (data) => {
@@ -29,10 +30,10 @@ export const useRoomStore = create<IRoomStore>((set) => ({
             set((state) => ({
                 rooms: [...state.rooms, response.data.room],
                 room: response.data.room,
-                inviteLink:response.data.inviteLink
-               
+                inviteLink: response.data.inviteLink
+
             }));
-            
+
         } finally {
             set({ isLoading: false });
         }
@@ -68,5 +69,9 @@ export const useRoomStore = create<IRoomStore>((set) => ({
         finally {
             set({ isLoading: false });
         }
+    },
+    getRoomById: async (roomId: string) => {
+        const response = await roomServices.getRoomById(roomId);
+        set({ room: response.data });
     }
 }));
