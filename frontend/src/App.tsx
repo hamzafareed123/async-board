@@ -7,6 +7,8 @@ import ProtectedRoute from "./components/routes/ProtectedRoute";
 import { useAuthStore } from "./store/auth-store";
 import ForgotPasswordPage from "./pages/auth/forgot-password/ForgotPasswordPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
+import PublicRoute from "./components/routes/PublicRoute";
+import CanvasPage from "./pages/canvas/CanvasPage";
 
 const App = () => {
   const { checkAuth } = useAuthStore();
@@ -15,18 +17,44 @@ const App = () => {
     checkAuth();
   }, [checkAuth]);
 
-
-  // TODO 
-  // set user profile issue
-  // set sidebar alignment issues
-  // set editor 
+  // TODO
+  // set the canvas editor canvas.tsx
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PublicRoute>
+              <SignupPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPasswordPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/canvas/:roomId"
+          element={
+            <ProtectedRoute>
+              <CanvasPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={

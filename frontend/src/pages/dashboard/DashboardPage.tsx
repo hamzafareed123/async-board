@@ -54,12 +54,15 @@ export const DashboardPage = () => {
                   <X size={20} />
                 </button>
               </div>
-              <NavItem onSelect={(panel) => setActivePanel(panel)} />
+              <NavItem
+                activePanel={activePanel}
+                onSelect={(panel) => setActivePanel(panel)}
+              />
             </div>
           )}
         </aside>
 
-        <section className="flex-1 overflow-y-auto p-8">
+        <section className="flex-1 overflow-y-auto p-6 sm:p-8">
           {!isSidebarOpen && (
             <button
               type="button"
@@ -70,9 +73,17 @@ export const DashboardPage = () => {
               <Menu size={20} />
             </button>
           )}
-          <DashboardHeader onCreate={openCreateModal} />
+          {activePanel !== "user-profile" && (
+            <DashboardHeader onCreate={openCreateModal} />
+          )}
 
-          <div className="mt-8">
+          <div
+            className={
+              activePanel === "user-profile"
+                ? "flex min-h-[calc(100vh-4rem)] items-center justify-center"
+                : "mt-8"
+            }
+          >
             {activePanel === "boards" && (
               <UserBoard openCreateModal={openCreateModal} />
             )}

@@ -25,5 +25,9 @@ export const roomServices = {
     getMembers: async (roomId: string) => {
         const response = await apiClient.get(`/api/room/${roomId}/members`)
         return response.data;
-    }
+    },
+    getRoomById: async (roomId: string) => {
+        const response = await apiClient.get(`/api/room/${roomId}`);
+        return response.data;
+    },
 }
