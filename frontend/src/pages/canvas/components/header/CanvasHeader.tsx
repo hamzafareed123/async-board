@@ -18,7 +18,7 @@ interface CanvasHeaderProps {
 
 const CanvasHeader = ({
   roomName,
-  roomId,
+
   onlineMembers,
   onExport,
   onShare,
@@ -33,7 +33,7 @@ const CanvasHeader = ({
 
   return (
     <header
-      className="flex items-center h-16 px-3  bg-white/90 backdrop-blur-sm
+      className="flex items-center h-16 px-3 mt-5 mx-5 bg-white/90 backdrop-blur-sm
             border-b border-gray-200/80 select-none shadow-sm"
     >
       {/* LEFT */}

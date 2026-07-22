@@ -4,6 +4,7 @@ import { useRoomStore } from "../../store/room-store";
 import CanvasHeader from "./components/header/CanvasHeader";
 import { onlineMembers } from "../../data/onlineMembersData";
 import ToolBar from "./components/toolbar/ToolBar";
+import CanvasBoard from "./components/canvas/CanvasBoard";
 
 const CanvasPage = () => {
   const { roomId } = useParams();
@@ -15,17 +16,22 @@ const CanvasPage = () => {
 
   console.log("Room id", roomId);
   return (
-    <div>
-      <CanvasHeader
-        roomName={room?.name || ""}
-        roomId={roomId || ""}
-        onlineMembers={onlineMembers} // ← from socket later
-        onExport={() => {}}
-        onShare={() => {}}
-      />
-
-      <ToolBar/>
-
+    <div className="relative w-screen h-screen overflow-hidden">
+      <CanvasBoard />
+      <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
+        <div className="pointer-events-auto">
+          <CanvasHeader
+            roomName={room?.name || ""}
+            roomId={roomId || ""}
+            onlineMembers={onlineMembers} // ← from socket later
+            onExport={() => {}}
+            onShare={() => {}}
+          />
+        </div>
+      </div>
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+        <ToolBar />
+      </div>
     </div>
   );
 };
