@@ -18,7 +18,7 @@ const App = () => {
   }, [checkAuth]);
 
   // TODO
-  // set the canvas editor canvas.tsx
+  // set the canvas tools  text,sticky notes, image
   return (
     <BrowserRouter>
       <Routes>

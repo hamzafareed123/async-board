@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Stage, Layer, Rect, Line, Ellipse } from "react-konva";
+import { Stage, Layer, Rect, Line, Ellipse, Arrow, Text } from "react-konva";
 import { v4 as uuidv4 } from "uuid";
 import { useCanvasStore } from "../../../../store/canvas-store";
 
@@ -13,6 +13,12 @@ const CanvasBoard = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [currentShape, setCurrentShape] = useState<any>(null);
+  const [textInput, setTextInput] = useState<{
+    x: number;
+    y: number;
+    visible: boolean;
+    value: string;
+  } | null>(null);
 
   useEffect(() => {
     const handleResize = () =>
@@ -74,6 +80,58 @@ const CanvasBoard = () => {
         strokeWidth: 2,
       });
     }
+    if (activeTool === "Arrow") {
+      setCurrentShape({
+        id: uuidv4(),
+        type: "arrow",
+        points: [pos.x, pos.y, pos.x, pos.y],
+        pointerLength: 20,
+        pointerWidth: 20,
+        fill: "transparent",
+        stroke: "#6366F1",
+        strokeWidth: 1,
+      });
+    }
+    if (activeTool === "Pen") {
+      setCurrentShape({
+        id: uuidv4(),
+        type: "pen",
+        points: [pos.x, pos.y],
+        pointerLength: 20,
+        pointerWidth: 20,
+        fill: "transparent",
+        stroke: "#6366F1",
+        strokeWidth: 2,
+        tension: 0.5,
+        lineCap: "round",
+        lineJoin: "round",
+      });
+    }
+
+    // if (activeTool === "Text") {
+    //   setCurrentShape({
+    //     id: uuidv4(),
+    //     type: "text",
+    //     x: pos.x,
+    //     y: pos.y,
+    //     text: "Hello",
+    //     fontSize: 20,
+    //     fontFamily: "Inter",
+    //     fill: "#111827",
+    //   });
+    // }
+    if (activeTool === "Text") {
+      console.log("Text is click", pos);
+      console.log("Active tool", activeTool);
+      setTextInput({
+        x: pos.x,
+        y: pos.y,
+        visible: true,
+        value: "",
+      });
+      setIsDrawing(false);
+      return;
+    }
   };
 
   const handleMouseMove = (e: any) => {
@@ -101,6 +159,18 @@ const CanvasBoard = () => {
       setCurrentShape((prev) => ({
         ...prev,
         points: [prev.points[0], prev.points[1], pos.x, pos.y],
+      }));
+    }
+    if (activeTool === "Arrow") {
+      setCurrentShape((prev) => ({
+        ...prev,
+        points: [prev.points[0], prev.points[1], pos.x, pos.y],
+      }));
+    }
+    if (activeTool === "Pen") {
+      setCurrentShape((prev) => ({
+        ...prev,
+        points: [...prev.points, pos.x, pos.y],
       }));
     }
   };
@@ -161,12 +231,77 @@ const CanvasBoard = () => {
         />
       );
     }
+    if (el.type === "arrow") {
+      return (
+        <Arrow
+          key={el.id}
+          points={el.points}
+          pointerLength={el.pointerLength}
+          pointerWidth={el.pointerWidth}
+          fill={el.fill}
+          stroke={el.stroke}
+          strokeWidth={el.strokeWidth}
+          draggable={activeTool === "Select"}
+        />
+      );
+    }
+
+    if (el.type === "pen") {
+      return (
+        <Line
+          key={el.id}
+          points={el.points}
+          stroke={el.stroke}
+          strokeWidth={el.strokeWidth}
+          tension={0.5}
+          lineCap="round"
+          lineJoin="round"
+          draggable={activeTool === "Select"}
+        />
+      );
+    }
+    if (el.type === "text") {
+      return (
+        <Text
+          key={el.id}
+          x={el.x}
+          y={el.y}
+          text={el.text}
+          fontFamily={el.fontFamily}
+          fill={el.fill}
+          offsetX={el.offsetX}
+          draggable={activeTool === "Select"}
+        />
+      );
+    }
+
     return null;
+  };
+
+  const saveText = () => {
+    if (!textInput || !textInput.value.trim()) {
+      setTextInput(null);
+      return;
+    }
+
+    addElement({
+      id: uuidv4(),
+      type: "text",
+      x: textInput.x,
+      y: textInput.y,
+      text: textInput.value,
+      fontSize: 20,
+      fontFamily: "Inter",
+      fill: "#111827",
+    });
+
+    setTextInput(null);
   };
 
   return (
     <div
       style={{
+        position: "relative",
         width: "100%",
         height: "100%",
         backgroundImage:
@@ -221,8 +356,71 @@ const CanvasBoard = () => {
               lineJoin="round"
             />
           )}
+
+          {currentShape && currentShape.type === "arrow" && (
+            <Arrow
+              points={currentShape.points}
+              pointerWidth={currentShape.pointerWidth}
+              pointerLength={currentShape.pointerLength}
+              fill={currentShape.fill}
+              stroke={currentShape.stroke}
+              strokeWidth={currentShape.strokeWidth}
+            />
+          )}
+          {currentShape && currentShape.type === "pen" && (
+            <Line
+              points={currentShape.points}
+              stroke={currentShape.stroke}
+              strokeWidth={currentShape.strokeWidth}
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+            />
+          )}
+
+          {currentShape && currentShape.type === "text" && (
+            <Text
+              x={currentShape.x}
+              y={currentShape.y}
+              text={currentShape.text}
+              fontFamily={currentShape.fontFamily}
+              fill={currentShape.fill}
+              offsetX={currentShape.offsetX}
+            />
+          )}
         </Layer>
       </Stage>
+      {textInput?.visible && (
+        <input
+          autoFocus
+          type="text"
+          value={textInput.value}
+          onChange={(e) =>
+            setTextInput((prev) =>
+              prev ? { ...prev, value: e.target.value } : null,
+            )
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") saveText();
+            if (e.key === "Escape") setTextInput(null);
+          }}
+          onBlur={saveText}
+          style={{
+            position: "absolute",
+            top: textInput.y,
+            left: textInput.x,
+            background: "transparent",
+            border: "1px dashed #6366F1",
+            outline: "none",
+            fontSize: "20px",
+            fontFamily: "Inter",
+            color: "#111827",
+            minWidth: "100px",
+            padding: "2px 4px",
+            zIndex: 20,
+          }}
+        />
+      )}
     </div>
   );
 };
