@@ -49,7 +49,7 @@ const CreateRoomModal = ({ onClose, onSubmit }: CreateRoomModalProps) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded bg-white p-6 shadow-2xl">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>

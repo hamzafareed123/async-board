@@ -1,4 +1,5 @@
 import { LayoutDashboard } from "lucide-react";
+import Button from "../../../../components/ui/button";
 
 interface EmptyStateProps {
   title: string;
@@ -13,8 +14,6 @@ const EmptyState = ({
   actionLabel,
   onAction,
 }: EmptyStateProps) => {
-
-    
   return (
     <div>
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -24,17 +23,11 @@ const EmptyState = ({
         <h3 className="text-lg font-semibold text-text-primary mt-2">
           {title}
         </h3>
-        <p className="text-sm text-text-secondary mt-1 max-w-xs">
+        <p className="text-sm text-text-secondary mt-1 max-w-xs mb-4">
           {description}
         </p>
         {actionLabel && onAction && (
-          <button
-            onClick={onAction}
-            className="mt-6 px-4 py-2 bg-primary text-white text-sm 
-            font-medium rounded-lg hover:bg-primary-hover transition"
-          >
-            {actionLabel}
-          </button>
+          <Button onClick={onAction} label={actionLabel} />
         )}
       </div>
     </div>
