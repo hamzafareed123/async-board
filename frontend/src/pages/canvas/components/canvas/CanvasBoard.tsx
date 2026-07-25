@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useCanvasStore } from "../../../../store/canvas-store";
 
 const CanvasBoard = () => {
-  const { activeTool, elements, addElement } = useCanvasStore();
+  const { activeTool, elements, addElement, deleteElement } = useCanvasStore();
 
   const [size, setSize] = useState({
     width: window.innerWidth,
@@ -37,6 +37,18 @@ const CanvasBoard = () => {
 
   const handleMouseDown = (e: any) => {
     if (activeTool === "Select") return;
+
+    if (activeTool === "Text") {
+      const pos = getPos(e);
+
+      setTextInput({
+        x: pos.x,
+        y: pos.y,
+        visible: true,
+        value: "",
+      });
+      return;
+    }
 
     const pos = getPos(e);
     setIsDrawing(true);
@@ -107,31 +119,6 @@ const CanvasBoard = () => {
         lineJoin: "round",
       });
     }
-
-    // if (activeTool === "Text") {
-    //   setCurrentShape({
-    //     id: uuidv4(),
-    //     type: "text",
-    //     x: pos.x,
-    //     y: pos.y,
-    //     text: "Hello",
-    //     fontSize: 20,
-    //     fontFamily: "Inter",
-    //     fill: "#111827",
-    //   });
-    // }
-    if (activeTool === "Text") {
-      console.log("Text is click", pos);
-      console.log("Active tool", activeTool);
-      setTextInput({
-        x: pos.x,
-        y: pos.y,
-        visible: true,
-        value: "",
-      });
-      setIsDrawing(false);
-      return;
-    }
   };
 
   const handleMouseMove = (e: any) => {
@@ -199,6 +186,7 @@ const CanvasBoard = () => {
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
           draggable={activeTool === "Select"}
+          onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -214,6 +202,7 @@ const CanvasBoard = () => {
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
           draggable={activeTool === "Select"}
+           onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -228,6 +217,7 @@ const CanvasBoard = () => {
           lineCap="round"
           lineJoin="round"
           draggable={activeTool === "Select"}
+           onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -242,6 +232,7 @@ const CanvasBoard = () => {
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
           draggable={activeTool === "Select"}
+           onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -257,6 +248,7 @@ const CanvasBoard = () => {
           lineCap="round"
           lineJoin="round"
           draggable={activeTool === "Select"}
+           onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -271,6 +263,7 @@ const CanvasBoard = () => {
           fill={el.fill}
           offsetX={el.offsetX}
           draggable={activeTool === "Select"}
+           onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -296,6 +289,12 @@ const CanvasBoard = () => {
     });
 
     setTextInput(null);
+  };
+
+  const handleEraserElement = (id: string) => {
+    if (activeTool === "Eraser") {
+      deleteElement(id);
+    }
   };
 
   return (
@@ -404,20 +403,21 @@ const CanvasBoard = () => {
             if (e.key === "Enter") saveText();
             if (e.key === "Escape") setTextInput(null);
           }}
-          onBlur={saveText}
           style={{
             position: "absolute",
             top: textInput.y,
             left: textInput.x,
-            background: "transparent",
-            border: "1px dashed #6366F1",
+            background: "white",
+            border: "1.5px dashed #6366F1",
+            borderRadius: "4px",
             outline: "none",
             fontSize: "20px",
             fontFamily: "Inter",
             color: "#111827",
-            minWidth: "100px",
-            padding: "2px 4px",
-            zIndex: 20,
+            minWidth: "120px",
+            padding: "4px 8px",
+            zIndex: 9999,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           }}
         />
       )}
