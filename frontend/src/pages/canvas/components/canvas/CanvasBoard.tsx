@@ -143,19 +143,19 @@ const CanvasBoard = () => {
     }
 
     if (activeTool === "Line") {
-      setCurrentShape((prev) => ({
+      setCurrentShape((prev: any) => ({
         ...prev,
         points: [prev.points[0], prev.points[1], pos.x, pos.y],
       }));
     }
     if (activeTool === "Arrow") {
-      setCurrentShape((prev) => ({
+      setCurrentShape((prev: any) => ({
         ...prev,
         points: [prev.points[0], prev.points[1], pos.x, pos.y],
       }));
     }
     if (activeTool === "Pen") {
-      setCurrentShape((prev) => ({
+      setCurrentShape((prev: any) => ({
         ...prev,
         points: [...prev.points, pos.x, pos.y],
       }));

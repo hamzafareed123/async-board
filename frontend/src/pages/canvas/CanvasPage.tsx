@@ -1,20 +1,22 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useRoomStore } from "../../store/room-store";
 import CanvasHeader from "./components/header/CanvasHeader";
-import { onlineMembers } from "../../data/onlineMembersData";
+
 import ToolBar from "./components/toolbar/ToolBar";
 import CanvasBoard from "./components/canvas/CanvasBoard";
+import { useSocket } from "../../hooks/useSocket";
 
 const CanvasPage = () => {
   const { roomId } = useParams();
   const { getRoomById, room } = useRoomStore();
-
+  const {onlineMembers} = useSocket(roomId ?? "");
+  console.log("avatar")
   useEffect(() => {
     if (roomId) getRoomById(roomId);
   }, [getRoomById]);
 
-  console.log("Room id", roomId);
+  console.log("Online members", onlineMembers);
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       <CanvasBoard />

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AuthForm from "../../components/forms/AuthForm";
 import { useAuthStore } from "../../store/auth-store";
 import { useState } from "react";
@@ -8,23 +8,26 @@ import collab2 from "../../assets/collab2.jpg";
 const LoginPage = () => {
   const { login } = useAuthStore();
   const navigate = useNavigate();
+   const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/dashboard";
 
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (values: { email: string; password: string }) => {
     try {
       await login({ email: values.email, password: values.password });
-      navigate("/dashboard");
+      navigate(from, { replace: true });
     } catch (error: unknown) {
       setError(getErrorMessage(error, "Invalid credentials"));
     }
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.14),_transparent_40%),linear-gradient(135deg,_#f8faff_0%,_#f5f7ff_100%)] px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-center">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.14),transparent_40%),linear-gradient(135deg,#f8faff_0%,#f5f7ff_100%)] px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-center">
       <div className="w-full max-w-6xl overflow-hidden rounded-[28px] border border-border/70 bg-surface shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
         <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="relative min-h-70 overflow-hidden bg-primary-light lg:min-h-[620px]">
+          <div className="relative min-h-70 overflow-hidden bg-primary-light lg:min-h-155">
             <img
               src={collab2}
               alt="Team collaboration illustration"

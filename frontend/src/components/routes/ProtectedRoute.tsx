@@ -1,7 +1,7 @@
 import React from "react";
 import { useAuthStore } from "../../store/auth-store";
 import Spinner from "../ui/Spinner";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,9 +10,11 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isCheckingAuth, authUser } = useAuthStore();
 
+  const location = useLocation()
+
   if (isCheckingAuth) return <Spinner />;
 
-  if (!authUser) return <Navigate to="/login" replace />;
+  if (!authUser) return <Navigate to="/login" state={{from:location}} replace />;
   return <>{children}</>;
 };
 

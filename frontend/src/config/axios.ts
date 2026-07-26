@@ -40,7 +40,7 @@ apiClient.interceptors.response.use(
                     { withCredentials: true }
                 );
 
-                const newToken = response.data.accessToken;
+                const newToken = response.data.data.accessToken;
                 localStorage.setItem("accessToken", newToken);
 
                 originalRequest.headers.Authorization = `Bearer ${newToken}`;

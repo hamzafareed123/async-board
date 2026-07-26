@@ -32,6 +32,11 @@ export const useAuthStore = create<IAuthStore>((set) => ({
     isLoading: false,
 
     checkAuth: async () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            set({ authUser: null, isCheckingAuth: false });
+            return;
+        }
         try {
             set({ isCheckingAuth: true })
             const response = await authServices.authUser();

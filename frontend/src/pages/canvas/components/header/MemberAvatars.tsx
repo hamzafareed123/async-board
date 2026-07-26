@@ -7,6 +7,8 @@ interface MemberAvatarsProps {
     }[];
 }
 
+
+
 const MAX_VISIBLE = 3;
 
 const MemberAvatars = ({ members }: MemberAvatarsProps) => {
@@ -17,7 +19,7 @@ const MemberAvatars = ({ members }: MemberAvatarsProps) => {
         <div className="flex items-center">
             {visible.map((member, index) => (
                 <div
-                    key={member.userId}
+                    key={member.cursorColor}
                     className="relative group"
                     style={{ marginLeft: index === 0 ? 0 : "-8px", zIndex: index }}
                 >
@@ -26,12 +28,12 @@ const MemberAvatars = ({ members }: MemberAvatarsProps) => {
                         <img
                             src={member.profilePic}
                             alt={member.fullName}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-surface"
+                            className="w-8 h-8 rounded-full object-cover cursor-pointer border-2 border-surface"
                             style={{ borderColor: member.cursorColor }}
                         />
                     ) : (
                         <div
-                            className="w-8 h-8 rounded-full border-2 border-surface
+                            className="w-8 h-8 rounded-full border-2 cursor-pointer border-surface
                                 flex items-center justify-center text-white text-xs font-semibold"
                             style={{
                                 background: member.cursorColor,
@@ -57,7 +59,7 @@ const MemberAvatars = ({ members }: MemberAvatarsProps) => {
                 <div
                     className="w-8 h-8 rounded-full bg-surface-2 border border-border
                         flex items-center justify-center text-xs font-medium
-                        text-text-secondary"
+                        text-text-secondary cursor-pointer"
                     style={{ marginLeft: "-8px" }}
                 >
                     +{remaining}
