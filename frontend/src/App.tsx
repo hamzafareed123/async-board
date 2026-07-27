@@ -9,6 +9,7 @@ import ForgotPasswordPage from "./pages/auth/forgot-password/ForgotPasswordPage"
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import PublicRoute from "./components/routes/PublicRoute";
 import CanvasPage from "./pages/canvas/CanvasPage";
+import { JoinPage } from "./pages/canvas/components/canvas/JoinPage";
 
 const App = () => {
   const { checkAuth } = useAuthStore();
@@ -18,7 +19,7 @@ const App = () => {
   }, [checkAuth]);
 
   // TODO
-  // set the canvas tools  text,sticky notes, image
+  // set the already join room member issue, elements live sync
   return (
     <BrowserRouter>
       <Routes>
@@ -60,6 +61,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/join/:code"
+          element={
+            <ProtectedRoute>
+              <JoinPage />
             </ProtectedRoute>
           }
         />

@@ -12,7 +12,9 @@ interface IRoomStore {
     createRoom: (data: ICreateRoomDTO) => Promise<void>;
     deleteRoom: (roomId: string) => Promise<void>;
     getRooms: () => Promise<void>;
-    getRoomById:(roomId:string)=>Promise<void>;
+    getMembers: (roomId: string) => Promise<void>;
+    getRoomById: (roomId: string) => Promise<void>;
+    joinRoom: (code: string) => Promise<IRoom>;
 }
 
 export const useRoomStore = create<IRoomStore>((set) => ({
@@ -22,7 +24,6 @@ export const useRoomStore = create<IRoomStore>((set) => ({
     members: [],
     inviteLink: null,
 
-
     createRoom: async (data) => {
         set({ isLoading: true });
         try {
@@ -31,9 +32,7 @@ export const useRoomStore = create<IRoomStore>((set) => ({
                 rooms: [...state.rooms, response.data.room],
                 room: response.data.room,
                 inviteLink: response.data.inviteLink
-
             }));
-
         } finally {
             set({ isLoading: false });
         }
@@ -60,18 +59,38 @@ export const useRoomStore = create<IRoomStore>((set) => ({
             set({ isLoading: false });
         }
     },
+
     getMembers: async (roomId: string) => {
         set({ isLoading: true });
         try {
             const response = await roomServices.getMembers(roomId);
             set({ members: response.data });
-        }
-        finally {
+        } finally {
             set({ isLoading: false });
         }
     },
+
     getRoomById: async (roomId: string) => {
-        const response = await roomServices.getRoomById(roomId);
-        set({ room: response.data });
-    }
+        set({ isLoading: true });
+        try {
+            const response = await roomServices.getRoomById(roomId);
+            set({ room: response.data });
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    joinRoom: async (code: string) => {
+        set({ isLoading: true });
+        try {
+            const response = await roomServices.joinRoom(code);
+            console.log("Response is ", response)
+            const room = response.data;
+            console.log("Room Data is ", room)
+            set({ room });
+            return room;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
 }));
