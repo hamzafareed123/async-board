@@ -45,18 +45,30 @@ export const roomServices = {
             throw new customError(ERROR_MESSAGE.ROOM_EXPIRED, STATUS_CODE.NOT_FOUND)
         }
 
-        if (room.inviteCode.maxMembers && room.members.length >= room.inviteCode.maxMembers) {
-            throw new customError(ERROR_MESSAGE.ROOM_FULL, STATUS_CODE.NO_CONTENT)
-        }
-
-        const alreadyMember = room.members.find(f => f.userId.toString() === user_id.toString());
+        const alreadyMember = room.members.find(
+            (f) => f.userId.toString() === user_id.toString()
+        );
 
         if (alreadyMember) {
-            throw new customError(ERROR_MESSAGE.ROOM_ALREADY_JOINED, STATUS_CODE.BAD_REQUEST)
+            return {
+                updatedRoom: room,
+                alreadyJoined: true,
+            };
+        }
+
+        if (
+            room.inviteCode.maxMembers &&
+            room.members.length >= room.inviteCode.maxMembers
+        ) {
+            throw new customError(ERROR_MESSAGE.ROOM_FULL, STATUS_CODE.BAD_REQUEST);
         }
 
         const updatedRoom = await roomRepository.joinRoom(user_id, room.id);
-        return updatedRoom
+
+        return {
+            updatedRoom,
+            alreadyJoined: false,
+        };
     },
 
     async getRoomMembers(user_id: string, room_id: string) {
@@ -72,11 +84,11 @@ export const roomServices = {
     async getUserRooms(userId: string) {
         return await roomRepository.getUserRooms(userId);
     },
-    async getRoomById(room_id:string){
+    async getRoomById(room_id: string) {
 
         const room = await roomRepository.getRoomById(room_id)
-        if(!room){
-            throw new customError(ERROR_MESSAGE.ROOM_NOT_FOUND,STATUS_CODE.NOT_FOUND)
+        if (!room) {
+            throw new customError(ERROR_MESSAGE.ROOM_NOT_FOUND, STATUS_CODE.NOT_FOUND)
         }
 
         return room;
