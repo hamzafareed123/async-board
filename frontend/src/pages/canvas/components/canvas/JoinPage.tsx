@@ -1,28 +1,74 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useRoomStore } from "../../../../store/room-store";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getErrorMessage } from "../../../../utils/error-helper";
+import { roomServices } from "../../../../services/room-services";
 
 export const JoinPage = () => {
   const { code } = useParams();
   const navigate = useNavigate();
-  const { joinRoom } = useRoomStore(); 
+  const { joinRoom } = useRoomStore();
   const [joining, setJoining] = useState(false);
+  const [checkingRoom, setCheckingRoom] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const redirectExistingMember = async () => {
+      if (!code) {
+        setCheckingRoom(false);
+        return;
+      }
+
+      try {
+        const response = await roomServices.getRooms();
+        const existingRoom = response.data.find(
+          (room: { _id: string; inviteCode: { code: string } }) =>
+            room.inviteCode.code === code
+        );
+
+        if (isActive && existingRoom) {
+          navigate(`/canvas/${existingRoom._id}`, { replace: true });
+          return;
+        }
+      } catch {
+        // The join request below will show any invitation-related error.
+      } finally {
+        if (isActive) {
+          setCheckingRoom(false);
+        }
+      }
+    };
+
+    redirectExistingMember();
+
+    return () => {
+      isActive = false;
+    };
+  }, [code, navigate]);
 
   const handleJoin = async () => {
     setJoining(true);
     setError(null);
     try {
-      const room = await joinRoom(code!); 
-      console.log("room new data",room)
-      navigate(`/canvas/${room._id}`, { replace: true });
+      const room = await joinRoom(code!);
+      console.log("room new data", room);
+      navigate(`/canvas/${room.updatedRoom._id}`, { replace: true });
     } catch (err) {
       setError(getErrorMessage(err, "Couldn't join this room."));
     } finally {
       setJoining(false);
     }
   };
+
+  if (checkingRoom) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-sm text-text-secondary">Checking invitation...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center h-screen">

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { IRoom, IMember, ICreateRoomDTO } from "../types/room-types";
+import type { IRoom, IMember, ICreateRoomDTO, IJoinRoomResponse } from "../types/room-types";
 import { roomServices } from "../services/room-services";
 
 interface IRoomStore {
@@ -14,7 +14,7 @@ interface IRoomStore {
     getRooms: () => Promise<void>;
     getMembers: (roomId: string) => Promise<void>;
     getRoomById: (roomId: string) => Promise<void>;
-    joinRoom: (code: string) => Promise<IRoom>;
+    joinRoom: (code: string) => Promise<IJoinRoomResponse>;
 }
 
 export const useRoomStore = create<IRoomStore>((set) => ({
