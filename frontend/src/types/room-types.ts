@@ -32,3 +32,8 @@ export interface ICreateRoomDTO {
     maxMembers: number;
     expiresAt?: string;
 }
+
+export interface IJoinRoomResponse {
+  updatedRoom: IRoom;
+  alreadyJoined: boolean;
+}

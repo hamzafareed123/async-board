@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useRoomStore } from "../../store/room-store";
 import CanvasHeader from "./components/header/CanvasHeader";
