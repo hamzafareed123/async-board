@@ -77,7 +77,7 @@ export const JoinPage = () => {
         <p className="text-sm text-text-secondary mb-6">
           You've been invited to collaborate on this board.
         </p>
-        <button disabled={joining} onClick={handleJoin}>
+        <button disabled={joining} onClick={handleJoin} className="px-4 py-2 bg-primary text-white rounded cursor-pointer hover:bg-primary-dark disabled:opacity-50">
           {joining ? "Joining..." : "Join Room"}
         </button>
         {error && <p className="text-sm text-red-500 mt-2">{error}</p>}

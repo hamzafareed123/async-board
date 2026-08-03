@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Download, Share2, ChevronDown } from "lucide-react";
+import { ArrowLeft, Download, Share2, ChevronDown, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MemberAvatars from "./MemberAvatars";
 
@@ -14,6 +14,7 @@ interface CanvasHeaderProps {
   }[];
   onExport: () => void;
   onShare: () => void;
+  inviteCopied: boolean;
 }
 
 const CanvasHeader = ({
@@ -22,6 +23,7 @@ const CanvasHeader = ({
   onlineMembers,
   onExport,
   onShare,
+  inviteCopied,
 }: CanvasHeaderProps) => {
   const [name, setName] = useState(roomName);
   const [isEditing, setIsEditing] = useState(false);
@@ -135,16 +137,27 @@ const CanvasHeader = ({
         </button>
 
         {/* Share */}
-        <button
-          onClick={onShare}
-          className="flex items-center gap-1.5 px-3 h-7 rounded-md cursor-pointer
-                        bg-primary text-white text-xs font-semibold
-                        hover:bg-primary-hover active:scale-95
-                        transition-all duration-150 shadow-sm"
-        >
-          <Share2 size={12} />
-          Share
-        </button>
+        <div className="relative">
+          {inviteCopied && (
+            <div
+              role="status"
+              className="absolute right-0 bottom-full mb-2 flex items-center gap-1 whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg"
+            >
+              <Check size={13} />
+              Join link copied
+            </div>
+          )}
+          <button
+            onClick={onShare}
+            className="flex items-center gap-1.5 px-3 h-7 rounded-md cursor-pointer
+                          bg-primary text-white text-xs font-semibold
+                          hover:bg-primary-hover active:scale-95
+                          transition-all duration-150 shadow-sm"
+          >
+            <Share2 size={12} />
+            Share
+          </button>
+        </div>
       </div>
     </header>
   );
