@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useRoomStore } from "../../store/room-store";
 import CanvasHeader from "./components/header/CanvasHeader";
-
+import { useCanvasStore } from "../../store/canvas-store";
 import ToolBar from "./components/toolbar/ToolBar";
 import CanvasBoard from "./components/canvas/CanvasBoard";
 import { useSocket } from "../../hooks/useSocket";
@@ -11,10 +11,41 @@ const CanvasPage = () => {
   const { roomId } = useParams();
   const { getRoomById, room } = useRoomStore();
   const { onlineMembers } = useSocket(roomId ?? "");
+  const [inviteCopied, setInviteCopied] = useState(false);
+  const copiedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { loadElements, clearElements } = useCanvasStore();
 
   useEffect(() => {
     if (roomId) getRoomById(roomId);
   }, [roomId]);
+
+  useEffect(() => {
+    if (roomId) {
+      loadElements(roomId);
+    }
+    return () => {
+      clearElements();
+    };
+  });
+
+  useEffect(
+    () => () => {
+      if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
+    },
+    [],
+  );
+
+  const inviteLink = `${window.location.origin}/join/${room?.inviteCode?.code}`;
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setInviteCopied(true);
+      if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
+      copiedTimeout.current = setTimeout(() => setInviteCopied(false), 2000);
+    } catch (error) {
+      console.log("failed to copy:", error);
+    }
+  };
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
@@ -26,7 +57,8 @@ const CanvasPage = () => {
             roomId={roomId || ""}
             onlineMembers={onlineMembers}
             onExport={() => {}}
-            onShare={() => {}}
+            onShare={handleShare}
+            inviteCopied={inviteCopied}
           />
         </div>
       </div>
