@@ -32,7 +32,7 @@ app.use(
 
 app.use("/api/auth", authRoute);
 app.use("/api/room", roomRoute);
-app.use("/api/element", elementRoute);
+app.use("/api/elements", elementRoute);
 app.use("/api/snapshot", snapshotRoute)
 
 app.use((error: any, req: any, res: any, next: any) => {
