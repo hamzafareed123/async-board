@@ -14,7 +14,7 @@ interface IRoomStore {
     getRooms: () => Promise<void>;
     getMembers: (roomId: string) => Promise<void>;
     getRoomById: (roomId: string) => Promise<void>;
-    joinRoom: (code: string) => Promise<IJoinRoomResponse>;
+    joinRoom: (code: string,role:string) => Promise<IJoinRoomResponse>;
 }
 
 export const useRoomStore = create<IRoomStore>((set) => ({
@@ -80,10 +80,10 @@ export const useRoomStore = create<IRoomStore>((set) => ({
         }
     },
 
-    joinRoom: async (code: string) => {
+    joinRoom: async (code: string,role:string) => {
         set({ isLoading: true });
         try {
-            const response = await roomServices.joinRoom(code);
+            const response = await roomServices.joinRoom(code,role);
             console.log("Response is ", response)
             const room = response.data;
             console.log("Room Data is ", room)

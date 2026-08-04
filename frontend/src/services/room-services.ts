@@ -16,9 +16,8 @@ export const roomServices = {
         const response = await apiClient.delete(`/api/room/${id}`)
         return response.data;
     },
-
-    joinRoom: async (code: string) => {
-        const response = await apiClient.get(`/api/room/join/${code}`)
+    joinRoom: async (code: string, role: string = "viewer") => {
+        const response = await apiClient.get(`/api/room/join/${code}?role=${role}`);
         return response.data;
     },
 

@@ -6,14 +6,16 @@ import { useCanvasStore } from "../../store/canvas-store";
 import ToolBar from "./components/toolbar/ToolBar";
 import CanvasBoard from "./components/canvas/CanvasBoard";
 import { useSocket } from "../../hooks/useSocket";
+import ShareModal from "./components/canvas/ShareModal";
 
 const CanvasPage = () => {
   const { roomId } = useParams();
   const { getRoomById, room } = useRoomStore();
   const { onlineMembers } = useSocket(roomId ?? "");
-  const [inviteCopied, setInviteCopied] = useState(false);
+
   const copiedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { loadElements, clearElements } = useCanvasStore();
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   useEffect(() => {
     if (roomId) getRoomById(roomId);
@@ -26,7 +28,7 @@ const CanvasPage = () => {
     return () => {
       clearElements();
     };
-  });
+  }, [roomId, loadElements, clearElements]);
 
   useEffect(
     () => () => {
@@ -35,21 +37,9 @@ const CanvasPage = () => {
     [],
   );
 
-  const inviteLink = `${window.location.origin}/join/${room?.inviteCode?.code}`;
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      setInviteCopied(true);
-      if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
-      copiedTimeout.current = setTimeout(() => setInviteCopied(false), 2000);
-    } catch (error) {
-      console.log("failed to copy:", error);
-    }
-  };
-
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      <CanvasBoard />
+      <CanvasBoard roomId={roomId || ""} />
       <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
         <div className="pointer-events-auto">
           <CanvasHeader
@@ -57,8 +47,11 @@ const CanvasPage = () => {
             roomId={roomId || ""}
             onlineMembers={onlineMembers}
             onExport={() => {}}
-            onShare={handleShare}
-            inviteCopied={inviteCopied}
+            onShare={() => setShareModalOpen(true)}
+          />
+          <ShareModal
+            isOpen={shareModalOpen}
+            onClose={() => setShareModalOpen(false)}
           />
         </div>
       </div>

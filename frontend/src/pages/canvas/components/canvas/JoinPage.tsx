@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useRoomStore } from "../../../../store/room-store";
 import { useEffect, useState } from "react";
 import { getErrorMessage } from "../../../../utils/error-helper";
@@ -6,6 +6,8 @@ import { roomServices } from "../../../../services/room-services";
 
 export const JoinPage = () => {
   const { code } = useParams();
+  const [searchParams] = useSearchParams();
+  const role = searchParams.get("role") || "viewer";
   const navigate = useNavigate();
   const { joinRoom } = useRoomStore();
   const [joining, setJoining] = useState(false);
@@ -25,7 +27,7 @@ export const JoinPage = () => {
         const response = await roomServices.getRooms();
         const existingRoom = response.data.find(
           (room: { _id: string; inviteCode: { code: string } }) =>
-            room.inviteCode.code === code
+            room.inviteCode.code === code,
         );
 
         if (isActive && existingRoom) {
@@ -52,7 +54,7 @@ export const JoinPage = () => {
     setJoining(true);
     setError(null);
     try {
-      const room = await joinRoom(code!);
+      const room = await joinRoom(code!, role);
       console.log("room new data", room);
       navigate(`/canvas/${room.updatedRoom._id}`, { replace: true });
     } catch (err) {
@@ -77,7 +79,11 @@ export const JoinPage = () => {
         <p className="text-sm text-text-secondary mb-6">
           You've been invited to collaborate on this board.
         </p>
-        <button disabled={joining} onClick={handleJoin} className="px-4 py-2 bg-primary text-white rounded cursor-pointer hover:bg-primary-dark disabled:opacity-50">
+        <button
+          disabled={joining}
+          onClick={handleJoin}
+          className="px-4 py-2 bg-primary text-white rounded cursor-pointer hover:bg-primary-dark disabled:opacity-50"
+        >
           {joining ? "Joining..." : "Join Room"}
         </button>
         {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
