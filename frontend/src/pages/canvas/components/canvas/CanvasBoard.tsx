@@ -2,8 +2,13 @@ import { useState, useEffect } from "react";
 import { Stage, Layer, Rect, Line, Ellipse, Arrow, Text } from "react-konva";
 import { v4 as uuidv4 } from "uuid";
 import { useCanvasStore } from "../../../../store/canvas-store";
+import { elementServices } from "../../../../services/element-services";
+import { socket } from "../../../../config/socket";
 
-const CanvasBoard = () => {
+interface CanvasBoardProps {
+  roomId:string
+}
+const CanvasBoard = ({roomId}:CanvasBoardProps) => {
   const { activeTool, elements, addElement, deleteElement } = useCanvasStore();
 
   const [size, setSize] = useState({
@@ -162,7 +167,7 @@ const CanvasBoard = () => {
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = async() => {
     if (!isDrawing || !currentShape) return;
 
     // save to store
@@ -171,6 +176,22 @@ const CanvasBoard = () => {
     // clear live shape
     setCurrentShape(null);
     setIsDrawing(false);
+    try {
+      // save to DB
+      const elementData = transformToApiShape(currentShape);
+      const response = await elementServices.createElement(
+        roomId,
+        elementData,
+      );
+
+      // emit socket with DB element (has real _id)
+      socket.emit("element:created", {
+        roomId,
+        element: response.data,
+      });
+    } catch (error) {
+      console.log("failed to save element:", error);
+    }
   };
 
   const renderElement = (el: any) => {
@@ -202,7 +223,7 @@ const CanvasBoard = () => {
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
           draggable={activeTool === "Select"}
-           onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -217,7 +238,7 @@ const CanvasBoard = () => {
           lineCap="round"
           lineJoin="round"
           draggable={activeTool === "Select"}
-           onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -232,7 +253,7 @@ const CanvasBoard = () => {
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
           draggable={activeTool === "Select"}
-           onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -248,7 +269,7 @@ const CanvasBoard = () => {
           lineCap="round"
           lineJoin="round"
           draggable={activeTool === "Select"}
-           onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -263,7 +284,7 @@ const CanvasBoard = () => {
           fill={el.fill}
           offsetX={el.offsetX}
           draggable={activeTool === "Select"}
-           onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={() => handleEraserElement(el.id)}
         />
       );
     }
@@ -296,6 +317,26 @@ const CanvasBoard = () => {
       deleteElement(id);
     }
   };
+
+  const transformToApiShape = (shape: any) => {
+    const base = {
+        type: shape.type,
+        position: { x: shape.x || 0, y: shape.y || 0 },
+        size: { width: shape.width || 0, height: shape.height || 0 },
+        points: shape.points || [],
+        style: {
+            color: shape.stroke || "#6366F1",
+            fillColor: shape.fill || "transparent",
+            strokeWidth: shape.strokeWidth || 2,
+            opacity: shape.opacity || 1,
+            fontSize: shape.fontSize || 16,
+        },
+        text: shape.text || null,
+        version: 0,
+    };
+
+    return base;
+};
 
   return (
     <div

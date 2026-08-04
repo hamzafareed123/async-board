@@ -19,7 +19,7 @@ const App = () => {
   }, [checkAuth]);
 
   // TODO
-  // set the already join room member issue, elements live sync
+  // set the already join room member issue, live user issue ,elements live sync
   return (
     <BrowserRouter>
       <Routes>

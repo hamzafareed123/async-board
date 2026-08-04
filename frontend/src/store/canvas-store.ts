@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { apiClient } from "../config/axios";
+import { transformToKonvaShape } from "../utils/transformElement";
 
 interface ICanvasStore {
     activeTool: string;
@@ -29,14 +30,16 @@ export const useCanvasStore = create<ICanvasStore>((set) => ({
     loadElements: async (roomId: string) => {
         set({ isLoading: true });
         try {
-            const response = await apiClient.get(`/api/rooms/${roomId}/elements`);
-            set({ elements: response.data.data });
+            const response = await apiClient.get(`/api/elements/${roomId}/elements`);
+            const konvaElements = response.data.data.map(transformToKonvaShape);
+
+            set({ elements: konvaElements });
         } finally {
             set({ isLoading: false });
         }
     },
 
-    clearElements: () => set({ elements: [] });
+    clearElements: () => set({ elements: [] })
 
 }))
 

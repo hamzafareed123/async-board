@@ -29,7 +29,7 @@ export const isEditorOrAbove = async (req: Request, res: Response, next: NextFun
 
 
         if (member?.role !== "editor" && member?.role !== "owner") {
-            throw new customError(ERROR_MESSAGE.UNAUTHORIZED, STATUS_CODE.FORBIDDEN)
+            throw new customError(ERROR_MESSAGE.FORBIDDEN, STATUS_CODE.FORBIDDEN)
         }
 
         (req as any).member = member;
@@ -44,7 +44,7 @@ export const isOwner = async (req: Request, res: Response, next: NextFunction) =
         const member = (req as any).member;
 
         if (member?.role !== "owner") {
-            throw new customError(ERROR_MESSAGE.UNAUTHORIZED, STATUS_CODE.FORBIDDEN)
+            throw new customError(ERROR_MESSAGE.FORBIDDEN, STATUS_CODE.FORBIDDEN)
         }
 
         (req as any).member = member;
