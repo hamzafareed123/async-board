@@ -33,7 +33,7 @@ export const roomServices = {
         await roomRepository.deleteRoom(room_id)
     },
 
-    async joinRoom(user_id: string, room_code: string) {
+    async joinRoom(user_id: string, room_code: string, role: "editor" | "viewer" = "viewer") {
 
         const room = await roomRepository.findRoomByCode(room_code);
 
@@ -63,7 +63,7 @@ export const roomServices = {
             throw new customError(ERROR_MESSAGE.ROOM_FULL, STATUS_CODE.BAD_REQUEST);
         }
 
-        const updatedRoom = await roomRepository.joinRoom(user_id, room.id);
+        const updatedRoom = await roomRepository.joinRoom(user_id, room.id,role);
 
         return {
             updatedRoom,

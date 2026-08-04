@@ -41,8 +41,10 @@ export const joinRoom = async (req: Request, res: Response, next: NextFunction) 
     try {
         const user_id = (req.user as any).id;
         const room_code = req.params.code as string;
+        const requestedRole = req.query.role;
+        const role = requestedRole === "editor" ? "editor" : "viewer";
 
-        const updatedRoom = await roomServices.joinRoom(user_id, room_code);
+        const updatedRoom = await roomServices.joinRoom(user_id, room_code,role);
         console.log("join Room",updatedRoom);
         (res as any).result = { data: updatedRoom, message: SUCCESS_MESSAGE.ROOM_JOIN }
         OutputHandler(STATUS_CODE.OK, req, res, next);
