@@ -19,6 +19,8 @@ export const SOCKET_EVENTS ={
 
     // elements
     ELEMENT_CREATED: "element:created",
+    ELEMENT_PREVIEW: "element:preview",
+    ELEMENT_PREVIEW_END: "element:preview:end",
     ELEMENT_ADDED: "element:added",
     ELEMENT_UPDATE: "element:update",
     ELEMENT_UPDATED: "element:updated",

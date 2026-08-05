@@ -14,6 +14,7 @@ interface CanvasHeaderProps {
     cursorColor: string;
   }[];
   onExport: () => void;
+ 
 
 }
 
@@ -21,6 +22,7 @@ const CanvasHeader = ({
   roomName,
   onlineMembers,
   onExport,
+ 
  
 }: CanvasHeaderProps) => {
   const [name, setName] = useState(roomName);
@@ -130,6 +132,7 @@ const CanvasHeader = ({
 
           {/* Share */}
           <button
+          
             onClick={() => setShareOpen(true)}
             className="flex items-center gap-1.5 px-3 h-7 rounded-md
                 bg-primary text-white text-xs font-semibold

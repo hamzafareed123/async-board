@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useCanvasStore } from "../../../../store/canvas-store";
 import { elementServices } from "../../../../services/element-services";
 import { socket } from "../../../../config/socket";
+import { transformToApiShape } from "../../../../utils/transformElement";
 
 interface CanvasBoardProps {
   roomId:string
@@ -18,6 +19,7 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [currentShape, setCurrentShape] = useState<any>(null);
+  const [remotePreviews, setRemotePreviews] = useState<Record<string, any>>({});
   const [textInput, setTextInput] = useState<{
     x: number;
     y: number;
@@ -33,6 +35,29 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
       });
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handlePreview = (data: { shape: any }) => {
+      setRemotePreviews((previews) => ({
+        ...previews,
+        [data.shape.id]: data.shape,
+      }));
+    };
+    const handlePreviewEnd = (data: { shapeId: string }) => {
+      setRemotePreviews((previews) => {
+        const { [data.shapeId]: _, ...remainingPreviews } = previews;
+        return remainingPreviews;
+      });
+    };
+
+    socket.on("element:preview", handlePreview);
+    socket.on("element:preview:end", handlePreviewEnd);
+
+    return () => {
+      socket.off("element:preview", handlePreview);
+      socket.off("element:preview:end", handlePreviewEnd);
+    };
   }, []);
 
   const getPos = (e: any) => {
@@ -132,43 +157,65 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     const pos = getPos(e);
 
     if (activeTool === "Rectangle") {
-      setCurrentShape((prev: any) => ({
+      setCurrentShape((prev: any) => {
+        const nextShape = {
         ...prev,
         width: pos.x - startPos.x,
         height: pos.y - startPos.y,
-      }));
+        };
+        socket.emit("element:preview", { roomId, shape: nextShape });
+        return nextShape;
+      });
     }
 
     if (activeTool === "Circle") {
-      setCurrentShape((prev: any) => ({
+      setCurrentShape((prev: any) => {
+        const nextShape = {
         ...prev,
         radiusX: Math.abs(pos.x - startPos.x) / 2,
         radiusY: Math.abs(pos.y - startPos.y) / 2,
-      }));
+        };
+        socket.emit("element:preview", { roomId, shape: nextShape });
+        return nextShape;
+      });
     }
 
     if (activeTool === "Line") {
-      setCurrentShape((prev: any) => ({
+      setCurrentShape((prev: any) => {
+        const nextShape = {
         ...prev,
         points: [prev.points[0], prev.points[1], pos.x, pos.y],
-      }));
+        };
+        socket.emit("element:preview", { roomId, shape: nextShape });
+        return nextShape;
+      });
     }
     if (activeTool === "Arrow") {
-      setCurrentShape((prev: any) => ({
+      setCurrentShape((prev: any) => {
+        const nextShape = {
         ...prev,
         points: [prev.points[0], prev.points[1], pos.x, pos.y],
-      }));
+        };
+        socket.emit("element:preview", { roomId, shape: nextShape });
+        return nextShape;
+      });
     }
     if (activeTool === "Pen") {
-      setCurrentShape((prev: any) => ({
+      setCurrentShape((prev: any) => {
+        const nextShape = {
         ...prev,
         points: [...prev.points, pos.x, pos.y],
-      }));
+        };
+        socket.emit("element:preview", { roomId, shape: nextShape });
+        return nextShape;
+      });
     }
   };
 
   const handleMouseUp = async() => {
     if (!isDrawing || !currentShape) return;
+
+    socket.emit("element:preview:end", { roomId, shapeId: currentShape.id });
 
     // save to store
     addElement(currentShape);
@@ -292,51 +339,43 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     return null;
   };
 
-  const saveText = () => {
+ const saveText = async () => {
     if (!textInput || !textInput.value.trim()) {
-      setTextInput(null);
-      return;
+        setTextInput(null);
+        return;
     }
 
-    addElement({
-      id: uuidv4(),
-      type: "text",
-      x: textInput.x,
-      y: textInput.y,
-      text: textInput.value,
-      fontSize: 20,
-      fontFamily: "Inter",
-      fill: "#111827",
-    });
+    const textShape = {
+        id: uuidv4(),
+        type: "text",
+        x: textInput.x,
+        y: textInput.y,
+        text: textInput.value,
+        fontSize: 20,
+        fontFamily: "Inter",
+        fill: "#111827",
+    };
 
+    addElement(textShape);
     setTextInput(null);
-  };
 
+    
+    try {
+        const elementData = transformToApiShape(textShape);
+        const response = await elementServices.createElement(roomId, elementData);
+        socket.emit("element:created", {
+            roomId,
+            element: response.data,
+        });
+    } catch (error) {
+        console.log("failed to save text:", error);
+    }
+};
   const handleEraserElement = (id: string) => {
     if (activeTool === "Eraser") {
       deleteElement(id);
     }
   };
-
-  const transformToApiShape = (shape: any) => {
-    const base = {
-        type: shape.type,
-        position: { x: shape.x || 0, y: shape.y || 0 },
-        size: { width: shape.width || 0, height: shape.height || 0 },
-        points: shape.points || [],
-        style: {
-            color: shape.stroke || "#6366F1",
-            fillColor: shape.fill || "transparent",
-            strokeWidth: shape.strokeWidth || 2,
-            opacity: shape.opacity || 1,
-            fontSize: shape.fontSize || 16,
-        },
-        text: shape.text || null,
-        version: 0,
-    };
-
-    return base;
-};
 
   return (
     <div
@@ -362,6 +401,9 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
         <Layer>
           {/* saved elements */}
           {elements.map(renderElement)}
+
+          {/* live previews from other users */}
+          {Object.values(remotePreviews).map(renderElement)}
 
           {/* currently drawing shape — live preview */}
           {currentShape && currentShape.type === "rect" && (

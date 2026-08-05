@@ -3,7 +3,7 @@ import Joi from "joi";
 
 export const createElementSchema = Joi.object({
     type: Joi.string()
-        .valid("rect", "circle", "path", "text", "sticky", "line", "arrow")
+        .valid("rect", "circle", "pen", "text", "sticky", "line", "arrow")
         .required(),
     position: Joi.object({
         x: Joi.number().required(),

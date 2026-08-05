@@ -1,5 +1,5 @@
 export interface ICreateElementDTO {
-    type: "rect" | "circle" | "path" | "text" | "sticky" | "line" | "arrow";
+    type: "rect" | "circle" | "pen" | "text" | "sticky" | "line" | "arrow";
     position: { x: number, y: number };
     size: { width: number, height: number };
     points: { x: number, y: number }[];
@@ -16,7 +16,7 @@ export interface ICreateElementDTO {
 
 export interface IUPDATEELEMENTDTO {
 
-    type?: "rect" | "circle" | "path" | "text" | "sticky" | "line" | "arrow";
+    type?: "rect" | "circle" | "pen" | "text" | "sticky" | "line" | "arrow";
     position?: { x: number, y: number };
     size?: { width: number, height: number };
     points?: { x: number, y: number }[];

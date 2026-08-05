@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { socket } from "../config/socket";
+import {useCanvasStore} from "../store/canvas-store"
+import { transformToKonvaShape } from "../utils/transformElement";
 
 export const useSocket = (roomId: string) => {
     const [onlineMembers, setOnlineMembers] = useState<any[]>([]);
@@ -13,7 +15,7 @@ export const useSocket = (roomId: string) => {
             socket.emit("room:join", roomId);
         });
 
-        // ✅ backend sends full member objects — use directly
+        //  backend sends full member objects — use directly
         socket.on("room:joined", (data) => {
             console.log("room:joined:", data);
             setOnlineMembers(data.members);
@@ -27,6 +29,12 @@ export const useSocket = (roomId: string) => {
                 return [...prev, data];
             });
         });
+        
+        socket.on("element:created",(data)=>{
+            console.log("element:created:",data)
+            const {addElement} = useCanvasStore.getState();
+            addElement(transformToKonvaShape(data.element));
+        })
 
         socket.on("user:left", (data) => {
             console.log("user:left:", data);
@@ -38,6 +46,11 @@ export const useSocket = (roomId: string) => {
         socket.on("error", (error) => {
             console.log("socket error:", error);
         });
+
+        socket.on("disconnect",(reason)=>{
+            console.log("socket disconnected:",reason);
+            
+        })
 
         return () => {
             socket.emit("room:leave", roomId);
