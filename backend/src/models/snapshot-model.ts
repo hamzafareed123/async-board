@@ -5,7 +5,7 @@ export interface ISnapShotDocument extends Document {
     createdBy: mongoose.Types.ObjectId;
     label: string;
     elements: {
-        type: "rect" | "circle" | "path" | "text" | "sticky" | "line" | "arrow";
+        type: "rect" | "circle" | "pen" | "text" | "sticky" | "line" | "arrow";
         position: { x: number, y: number };
         size: { width: number, height: number };
         points: { x: number, y: number }[];
@@ -42,7 +42,7 @@ const snapshotSchema = new Schema<ISnapShotDocument>({
         {
             type: {
                 type: String,
-                enum: ["rect", "circle", "path", "text", "sticky", "line", "arrow"],
+                enum: ["rect", "circle", "pen", "text", "sticky", "line", "arrow"],
                 required: true
             },
             position: {

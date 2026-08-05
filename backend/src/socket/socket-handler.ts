@@ -87,6 +87,20 @@ export const registerSocketHandler = async (io: Server) => {
             })
         })
 
+        socket.on(SOCKET_EVENTS.ELEMENT_PREVIEW, (data: { roomId: string, shape: any }) => {
+            socket.to(data.roomId).emit(SOCKET_EVENTS.ELEMENT_PREVIEW, {
+                userId: socket.data.userId,
+                shape: data.shape
+            })
+        })
+
+        socket.on(SOCKET_EVENTS.ELEMENT_PREVIEW_END, (data: { roomId: string, shapeId: string }) => {
+            socket.to(data.roomId).emit(SOCKET_EVENTS.ELEMENT_PREVIEW_END, {
+                userId: socket.data.userId,
+                shapeId: data.shapeId
+            })
+        })
+
         socket.on(SOCKET_EVENTS.ELEMENT_UPDATE, (data: { roomId: string, elementId: string, change: any }) => {
             socket.to(data.roomId).emit(SOCKET_EVENTS.ELEMENT_UPDATED, {
                 userId: socket.data.userId,

@@ -5,7 +5,7 @@ import mongoose, { Document, model, Schema } from "mongoose";
 export interface IElementDocument extends Document {
     roomId: mongoose.Types.ObjectId;
     createdBy: mongoose.Types.ObjectId;
-    type: "rect" | "circle" | "path" | "text" | "sticky" | "line" | "arrow";
+    type: "rect" | "circle" | "pen" | "text" | "sticky" | "line" | "arrow";
     position: { x: number, y: number };
     size: { width: number, height: number };
     points: { x: number, y: number }[];
@@ -40,7 +40,7 @@ const elementSchema = new Schema<IElementDocument>({
 
     type: {
         type: String,
-        enum: ["rect", "circle", "path", "text", "sticky", "line", "arrow"],
+        enum: ["rect", "circle", "pen", "text", "sticky", "line", "arrow"],
         required: true
     },
     position: {
