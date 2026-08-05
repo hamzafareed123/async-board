@@ -47,7 +47,7 @@ const CanvasPage = () => {
             roomId={roomId || ""}
             onlineMembers={onlineMembers}
             onExport={() => {}}
-            onShare={() => setShareModalOpen(true)}
+        
           />
           <ShareModal
             isOpen={shareModalOpen}
