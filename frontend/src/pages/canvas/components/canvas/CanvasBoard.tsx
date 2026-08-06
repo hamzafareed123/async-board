@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Stage, Layer, Rect, Line, Ellipse, Arrow, Text } from "react-konva";
+import React, { useState, useEffect } from "react";
+import { Stage, Layer, Rect, Line, Ellipse, Arrow, Text, Circle } from "react-konva";
 import { v4 as uuidv4 } from "uuid";
 import { useCanvasStore } from "../../../../store/canvas-store";
 import { elementServices } from "../../../../services/element-services";
@@ -7,9 +7,17 @@ import { socket } from "../../../../config/socket";
 import { transformToApiShape } from "../../../../utils/transformElement";
 
 interface CanvasBoardProps {
-  roomId:string
+  roomId: string;
+  cursors: {
+    [userId: string]: {
+      x: number;
+      y: number;
+      fullName: string;
+      cursorColor: string;
+    };
+  };
 }
-const CanvasBoard = ({roomId}:CanvasBoardProps) => {
+const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
   const { activeTool, elements, addElement, deleteElement } = useCanvasStore();
 
   const [size, setSize] = useState({
@@ -159,9 +167,9 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     if (activeTool === "Rectangle") {
       setCurrentShape((prev: any) => {
         const nextShape = {
-        ...prev,
-        width: pos.x - startPos.x,
-        height: pos.y - startPos.y,
+          ...prev,
+          width: pos.x - startPos.x,
+          height: pos.y - startPos.y,
         };
         socket.emit("element:preview", { roomId, shape: nextShape });
         return nextShape;
@@ -171,9 +179,9 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     if (activeTool === "Circle") {
       setCurrentShape((prev: any) => {
         const nextShape = {
-        ...prev,
-        radiusX: Math.abs(pos.x - startPos.x) / 2,
-        radiusY: Math.abs(pos.y - startPos.y) / 2,
+          ...prev,
+          radiusX: Math.abs(pos.x - startPos.x) / 2,
+          radiusY: Math.abs(pos.y - startPos.y) / 2,
         };
         socket.emit("element:preview", { roomId, shape: nextShape });
         return nextShape;
@@ -183,8 +191,8 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     if (activeTool === "Line") {
       setCurrentShape((prev: any) => {
         const nextShape = {
-        ...prev,
-        points: [prev.points[0], prev.points[1], pos.x, pos.y],
+          ...prev,
+          points: [prev.points[0], prev.points[1], pos.x, pos.y],
         };
         socket.emit("element:preview", { roomId, shape: nextShape });
         return nextShape;
@@ -193,8 +201,8 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     if (activeTool === "Arrow") {
       setCurrentShape((prev: any) => {
         const nextShape = {
-        ...prev,
-        points: [prev.points[0], prev.points[1], pos.x, pos.y],
+          ...prev,
+          points: [prev.points[0], prev.points[1], pos.x, pos.y],
         };
         socket.emit("element:preview", { roomId, shape: nextShape });
         return nextShape;
@@ -203,8 +211,8 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     if (activeTool === "Pen") {
       setCurrentShape((prev: any) => {
         const nextShape = {
-        ...prev,
-        points: [...prev.points, pos.x, pos.y],
+          ...prev,
+          points: [...prev.points, pos.x, pos.y],
         };
         socket.emit("element:preview", { roomId, shape: nextShape });
         return nextShape;
@@ -212,8 +220,17 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     }
   };
 
-  const handleMouseUp = async() => {
+  const handleMouseUp = async () => {
     if (!isDrawing || !currentShape) return;
+
+    const pos = getPos({
+      target: { getStage: () => ({ getPointerPosition: () => startPos }) },
+    });
+
+    socket.emit("cursor:move", {
+      roomId,
+      cursorPosition: { x: pos.x, y: pos.y },
+    });
 
     socket.emit("element:preview:end", { roomId, shapeId: currentShape.id });
 
@@ -226,10 +243,7 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     try {
       // save to DB
       const elementData = transformToApiShape(currentShape);
-      const response = await elementServices.createElement(
-        roomId,
-        elementData,
-      );
+      const response = await elementServices.createElement(roomId, elementData);
 
       // emit socket with DB element (has real _id)
       socket.emit("element:created", {
@@ -339,38 +353,37 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
     return null;
   };
 
- const saveText = async () => {
+  const saveText = async () => {
     if (!textInput || !textInput.value.trim()) {
-        setTextInput(null);
-        return;
+      setTextInput(null);
+      return;
     }
 
     const textShape = {
-        id: uuidv4(),
-        type: "text",
-        x: textInput.x,
-        y: textInput.y,
-        text: textInput.value,
-        fontSize: 20,
-        fontFamily: "Inter",
-        fill: "#111827",
+      id: uuidv4(),
+      type: "text",
+      x: textInput.x,
+      y: textInput.y,
+      text: textInput.value,
+      fontSize: 20,
+      fontFamily: "Inter",
+      fill: "#111827",
     };
 
     addElement(textShape);
     setTextInput(null);
 
-    
     try {
-        const elementData = transformToApiShape(textShape);
-        const response = await elementServices.createElement(roomId, elementData);
-        socket.emit("element:created", {
-            roomId,
-            element: response.data,
-        });
+      const elementData = transformToApiShape(textShape);
+      const response = await elementServices.createElement(roomId, elementData);
+      socket.emit("element:created", {
+        roomId,
+        element: response.data,
+      });
     } catch (error) {
-        console.log("failed to save text:", error);
+      console.log("failed to save text:", error);
     }
-};
+  };
   const handleEraserElement = (id: string) => {
     if (activeTool === "Eraser") {
       deleteElement(id);
@@ -401,6 +414,27 @@ const CanvasBoard = ({roomId}:CanvasBoardProps) => {
         <Layer>
           {/* saved elements */}
           {elements.map(renderElement)}
+          {Object.entries(cursors).map(([userId, cursor]) => (
+            <React.Fragment key={userId}>
+              {/* cursor dot */}
+              <Circle
+                x={cursor.x}
+                y={cursor.y}
+                radius={5}
+                fill={cursor.cursorColor}
+                listening={false}
+              />
+              {/* name label */}
+              <Text
+                x={cursor.x + 10}
+                y={cursor.y + 10}
+                text={cursor.fullName}
+                fontSize={12}
+                fill={cursor.cursorColor}
+                listening={false}
+              />
+            </React.Fragment>
+          ))}
 
           {/* live previews from other users */}
           {Object.values(remotePreviews).map(renderElement)}
