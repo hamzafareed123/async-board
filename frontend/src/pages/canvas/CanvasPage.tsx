@@ -11,7 +11,8 @@ import ShareModal from "./components/canvas/ShareModal";
 const CanvasPage = () => {
   const { roomId } = useParams();
   const { getRoomById, room } = useRoomStore();
-  const { onlineMembers } = useSocket(roomId ?? "");
+  const { onlineMembers,cursors } = useSocket(roomId ?? "");
+  
 
   const copiedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { loadElements, clearElements } = useCanvasStore();
@@ -39,7 +40,7 @@ const CanvasPage = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      <CanvasBoard roomId={roomId || ""} />
+      <CanvasBoard roomId={roomId || ""} cursors={cursors} />
       <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
         <div className="pointer-events-auto">
           <CanvasHeader

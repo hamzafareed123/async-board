@@ -47,7 +47,7 @@ export const registerSocketHandler = async (io: Server) => {
                 members: onlineMembers,
             });
 
-         
+
 
 
             socket.to(roomId).emit("user:joined", {
@@ -73,10 +73,13 @@ export const registerSocketHandler = async (io: Server) => {
             }
         })
 
-        socket.on(SOCKET_EVENTS.CURSOR_MOVE, (data: { roomId: string, cursorPosition: { x: number, y: number } }) => {
+
+        socket.on(SOCKET_EVENTS.CURSOR_MOVE, (data: { roomId: string, cursorPosition: { x: number, y: number }, fullName: string, cursorColor: string }) => {
             socket.to(data.roomId).emit(SOCKET_EVENTS.CURSOR_MOVED, {
                 userId: socket.data.userId,
-                cursorPosition: data.cursorPosition
+                cursorPosition: data.cursorPosition,
+                fullName: socket.data.fullName,
+                cursorColor: socket.data.cursorColor
             })
         })
 
