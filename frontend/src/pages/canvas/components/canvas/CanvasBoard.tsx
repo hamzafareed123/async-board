@@ -384,9 +384,16 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
       console.log("failed to save text:", error);
     }
   };
-  const handleEraserElement = (id: string) => {
-    if (activeTool === "Eraser") {
+
+  const handleEraserElement = async (id: string) => {
+    if (activeTool !== "Eraser") return;
+
+    try {
+      await elementServices.deleteElement(roomId, id);
       deleteElement(id);
+      socket.emit("element:delete", { roomId, elementId: id });
+    } catch (error) {
+      console.log("failed to delete element:", error);
     }
   };
 
