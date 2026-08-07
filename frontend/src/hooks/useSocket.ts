@@ -44,6 +44,12 @@ export const useSocket = (roomId: string) => {
             addElement(transformToKonvaShape(data.element));
         })
 
+        socket.on("element:deleted", (data) => {
+            console.log("element:deleted:", data)
+            const { deleteElement } = useCanvasStore.getState();
+            deleteElement(data.elementId);
+        })
+
         socket.on("user:left", (data) => {
             console.log("user:left:", data);
             setOnlineMembers(prev =>
@@ -85,6 +91,8 @@ export const useSocket = (roomId: string) => {
             socket.off("connect");
             socket.off("room:joined");
             socket.off("user:joined");
+            socket.off("element:created");
+            socket.off("element:deleted");
             socket.off("user:left");
             socket.off("error");
             socket.off("cursor:moved");
