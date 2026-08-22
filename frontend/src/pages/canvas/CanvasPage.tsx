@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useRoomStore } from "../../store/room-store";
 import CanvasHeader from "./components/header/CanvasHeader";
@@ -6,7 +6,6 @@ import { useCanvasStore } from "../../store/canvas-store";
 import ToolBar from "./components/toolbar/ToolBar";
 import CanvasBoard from "./components/canvas/CanvasBoard";
 import { useSocket } from "../../hooks/useSocket";
-import ShareModal from "./components/canvas/ShareModal";
 
 const CanvasPage = () => {
   const { roomId } = useParams();
@@ -16,7 +15,6 @@ const CanvasPage = () => {
 
   const copiedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { loadElements, clearElements } = useCanvasStore();
-  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   useEffect(() => {
     if (roomId) getRoomById(roomId);
@@ -49,10 +47,6 @@ const CanvasPage = () => {
             onlineMembers={onlineMembers}
             onExport={() => {}}
         
-          />
-          <ShareModal
-            isOpen={shareModalOpen}
-            onClose={() => setShareModalOpen(false)}
           />
         </div>
       </div>
