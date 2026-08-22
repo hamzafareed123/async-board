@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { ArrowLeft, Download, Share2, ChevronDown } from "lucide-react";
+import { ArrowLeft, Download, Share2, ChevronDown, History } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MemberAvatars from "./MemberAvatars";
 import ShareModal from "../canvas/ShareModal"
+import SnapshotModal from "../canvas/SnapShotModal";
+import { useAuthStore } from "../../../../store/auth-store";
+import { useRoomStore } from "../../../../store/room-store";
 
 interface CanvasHeaderProps {
   roomName: string;
@@ -20,6 +23,7 @@ interface CanvasHeaderProps {
 
 const CanvasHeader = ({
   roomName,
+  roomId,
   onlineMembers,
   onExport,
  
@@ -28,7 +32,16 @@ const CanvasHeader = ({
   const [name, setName] = useState(roomName);
   const [isEditing, setIsEditing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const { authUser } = useAuthStore();
+  const { room } = useRoomStore();
   const navigate = useNavigate();
+
+  const currentUserRole = room?.members.find((member) => {
+    const memberUser = member.userId as unknown as string | { _id: string };
+    const memberId = typeof memberUser === "string" ? memberUser : memberUser._id;
+    return memberId === authUser?.id;
+  })?.role ?? (room?.createdBy === authUser?.id ? "owner" : "viewer");
 
   const handleBlur = () => setIsEditing(false);
 
@@ -130,6 +143,16 @@ const CanvasHeader = ({
             <span className="hidden sm:block">Export</span>
           </button>
 
+          <button
+            onClick={() => setHistoryOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 h-7 rounded-md
+                border border-gray-200 text-gray-600 text-xs font-medium
+                hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer"
+          >
+            <History size={12} />
+            <span className="hidden sm:block">History</span>
+          </button>
+
           {/* Share */}
           <button
           
@@ -149,6 +172,12 @@ const CanvasHeader = ({
       <ShareModal
         isOpen={shareOpen}
         onClose={() => setShareOpen(false)}
+      />
+      <SnapshotModal
+        isOpen={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        roomId={roomId}
+        currentUserRole={currentUserRole}
       />
     </>
   );
