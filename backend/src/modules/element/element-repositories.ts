@@ -11,7 +11,7 @@ export const elementRepository = {
     },
 
     async getElements(room_id: string) {
-        return await Element.find({ roomId: room_id })
+        return await Element.findOneAndDelete({ roomId: room_id })
     },
 
     async updateElement(data: IUPDATEELEMENTDTO, room_id: string, element_id: string) {
