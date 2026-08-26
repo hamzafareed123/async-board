@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Stage, Layer, Rect, Line, Ellipse, Arrow, Text, Circle } from "react-konva";
+import { Stage, Layer, Rect, Line, Ellipse, Arrow, Text, Circle, Image as KonvaImage } from "react-konva";
 import { v4 as uuidv4 } from "uuid";
 import { useCanvasStore } from "../../../../store/canvas-store";
 import { elementServices } from "../../../../services/element-services";
@@ -18,7 +18,7 @@ interface CanvasBoardProps {
   };
 }
 const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
-  const { activeTool, elements, addElement, deleteElement } = useCanvasStore();
+  const { activeTool, elements, addElement, deleteElement, setActiveTool } = useCanvasStore();
 
   const [size, setSize] = useState({
     width: window.innerWidth,
@@ -44,6 +44,34 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const addUploadedImage = ({ detail }: CustomEvent<{ src: string }>) => {
+      const image = new window.Image();
+      image.onload = () => {
+        const maxWidth = Math.min(480, size.width * 0.6);
+        const maxHeight = Math.min(360, size.height * 0.6);
+        const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight, 1);
+        const width = Math.max(1, Math.round(image.naturalWidth * scale));
+        const height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+        addElement({
+          id: uuidv4(),
+          type: "image",
+          x: Math.round((size.width - width) / 2),
+          y: Math.round((size.height - height) / 2),
+          width,
+          height,
+          src: detail.src,
+        });
+        setActiveTool("Select");
+      };
+      image.src = detail.src;
+    };
+
+    window.addEventListener("board:image-selected", addUploadedImage as EventListener);
+    return () => window.removeEventListener("board:image-selected", addUploadedImage as EventListener);
+  }, [addElement, setActiveTool, size.height, size.width]);
 
   useEffect(() => {
     const handlePreview = (data: { shape: any }) => {
@@ -350,6 +378,10 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
       );
     }
 
+    if (el.type === "image") {
+      return <BoardImage key={el.id} element={el} draggable={activeTool === "Select"} onMouseDown={() => handleEraserElement(el.id)} />;
+    }
+
     return null;
   };
 
@@ -546,6 +578,38 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
         />
       )}
     </div>
+  );
+};
+
+const BoardImage = ({
+  element,
+  draggable,
+  onMouseDown,
+}: {
+  element: any;
+  draggable: boolean;
+  onMouseDown: () => void;
+}) => {
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const loadedImage = new window.Image();
+    loadedImage.onload = () => setImage(loadedImage);
+    loadedImage.src = element.src;
+  }, [element.src]);
+
+  if (!image) return null;
+
+  return (
+    <KonvaImage
+      image={image}
+      x={element.x}
+      y={element.y}
+      width={element.width}
+      height={element.height}
+      draggable={draggable}
+      onMouseDown={onMouseDown}
+    />
   );
 };
 
