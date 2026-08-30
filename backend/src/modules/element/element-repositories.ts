@@ -11,12 +11,12 @@ export const elementRepository = {
     },
 
     async getElements(room_id: string) {
-        return await Element.findOneAndUpdate({ roomId: room_id })
+        return await Element.find({ roomId: room_id })
     },
 
     async updateElement(data: IUPDATEELEMENTDTO, room_id: string, element_id: string) {
 
-        return await Element.findOneAndUpdate({ _id: element_id, roomId: room_id }, {
+        return await Element.findOneAndDelete({ _id: element_id, roomId: room_id }, {
             ...data,
             $inc: { version: 1 }
         }, { returnDocument: "after" })
