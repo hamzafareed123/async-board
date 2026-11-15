@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type Route } from "@playwright/test";
 
 const testUser = {
   id: "e2e-test-user",
@@ -7,8 +7,8 @@ const testUser = {
 };
 
 const createdBoard = {
-  _id: "board-123",
-  name: "Product planning board",
+  _id: "board-12345",
+  name: "Product planning board 3",
   description: "Roadmap for launch week",
   createdBy: testUser.id,
   members: [
@@ -29,7 +29,11 @@ const createdBoard = {
   updatedAt: new Date().toISOString(),
 };
 
-async function mockAuthenticatedDashboard(page: Page) {
+async function mockAuthenticatedDashboard(
+  page: Page,
+  rooms: typeof createdBoard[] = [],
+  onCreateRoom?: (route: Route) => Promise<void>,
+) {
   await page.addInitScript(() => {
     localStorage.setItem("accessToken", "e2e-test-access-token");
   });
@@ -51,8 +55,13 @@ async function mockAuthenticatedDashboard(page: Page) {
     if (method === "GET") {
       await route.fulfill({
         contentType: "application/json",
-        body: JSON.stringify({ data: [] }),
+        body: JSON.stringify({ data: rooms }),
       });
+      return;
+    }
+
+    if (onCreateRoom) {
+      await onCreateRoom(route);
       return;
     }
 
@@ -84,60 +93,19 @@ test("dashboard validates the board name before creating a board", async ({
 });
 
 test("dashboard shows an existing board in the board list", async ({ page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem("accessToken", "e2e-test-access-token");
-  });
-
-  await page.route("**/api/auth/auth-user", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({
-        data: testUser,
-        success: true,
-        message: "User authenticated",
-      }),
-    });
-  });
-
-  await page.route("**/api/room", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({ data: [createdBoard] }),
-    });
-  });
+  await mockAuthenticatedDashboard(page, [createdBoard]);
 
   await page.goto("/dashboard");
   await page.getByRole("button", { name: "My boards" }).click();
 
-  await expect(page.getByRole("heading", { name: "Product planning board" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Product planning board 3" })).toBeVisible();
   await expect(page.getByText("Public")).toBeVisible();
   await expect(page.getByText("1 member")).toBeVisible();
 });
 
 test("board card opens the board canvas", async ({ page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem("accessToken", "e2e-test-access-token");
-  });
-
-  await page.route("**/api/auth/auth-user", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({
-        data: testUser,
-        success: true,
-        message: "User authenticated",
-      }),
-    });
-  });
-
-  await page.route("**/api/room", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({ data: [createdBoard] }),
-    });
-  });
-
-  await page.route("**/api/room/**", async (route) => {
+  await mockAuthenticatedDashboard(page, [createdBoard]);
+  await page.route(`**/api/room/${createdBoard._id}`, async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({ data: createdBoard }),
@@ -153,7 +121,149 @@ test("board card opens the board canvas", async ({ page }) => {
 
   await page.goto("/dashboard");
   await page.getByRole("button", { name: "My boards" }).click();
-  await page.getByRole("heading", { name: "Product planning board" }).click();
+  await page.getByRole("heading", { name: "Product planning board 3" }).click();
 
-  await expect(page).toHaveURL(/\/canvas\/board-123$/);
+  await expect(page).toHaveURL(/\/canvas\/board-12345$/);
+});
+
+test("dashboard creates a board with the selected settings", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  let submittedData: unknown;
+  await mockAuthenticatedDashboard(page, [], async (route) => {
+    submittedData = route.request().postDataJSON();
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: {
+          room: createdBoard,
+          inviteLink: createdBoard.inviteLink,
+        },
+        success: true,
+        message: "Board created successfully",
+      }),
+    });
+  });
+
+  await page.goto("/dashboard");
+  await page.getByRole("button", { name: "My boards" }).click();
+  await page.getByRole("button", { name: "Create board", exact: true }).click();
+  await page.getByPlaceholder("Enter board name").fill("Planning board");
+  await page
+    .getByPlaceholder("Add an optional board description")
+    .fill("Plan the product launch");
+  await page.getByLabel("Max members").selectOption("5");
+  await page.getByRole("checkbox").uncheck();
+  await page.getByRole("button", { name: "Create board", exact: true }).last().click();
+
+  await expect(page.getByRole("heading", { name: "Board created" })).toBeVisible();
+  expect(submittedData).toEqual({
+    name: "Planning board",
+    description: "Plan the product launch",
+    isPublic: false,
+    maxMembers: 5,
+  });
+  await expect(page.getByText(createdBoard.inviteLink)).toBeVisible();
+});
+
+test("dashboard shows an error when board creation fails", async ({ page }) => {
+  await mockAuthenticatedDashboard(page, [], async (route) => {
+    await route.fulfill({
+      status: 500,
+      contentType: "application/json",
+      body: JSON.stringify({ message: "Server error" }),
+    });
+  });
+
+  await page.goto("/dashboard");
+  await page.getByRole("button", { name: "My boards" }).click();
+  await page.getByRole("button", { name: "Create board", exact: true }).click();
+  await page.getByPlaceholder("Enter board name").fill("Planning board");
+  await page.getByRole("button", { name: "Create board", exact: true }).last().click();
+
+  await expect(
+    page.getByText("Unable to create board. Please try again."),
+  ).toBeVisible();
+  await expect(page.getByPlaceholder("Enter board name")).toHaveValue("Planning board");
+});
+
+test("board owner can delete a board from the dashboard", async ({ page }) => {
+  await mockAuthenticatedDashboard(page, [createdBoard]);
+  await page.route(`**/api/room/${createdBoard._id}`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ success: true, message: "Board deleted" }),
+    });
+  });
+
+  await page.goto("/dashboard");
+  await page.getByRole("button", { name: "My boards" }).click();
+  await page.getByRole("button", { name: `Delete ${createdBoard.name}` }).click();
+
+  await expect(
+    page.getByRole("heading", { name: createdBoard.name }),
+  ).toHaveCount(0);
+});
+
+test("board owner can share an editor invitation from the canvas", async ({
+  page,
+}) => {
+  await mockAuthenticatedDashboard(page, [createdBoard]);
+  await page.route(`**/api/room/${createdBoard._id}`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ data: createdBoard }),
+    });
+  });
+  await page.route("**/api/elements/**", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.goto(`/canvas/${createdBoard._id}`);
+  await page.getByRole("button", { name: "Share" }).click();
+  await expect(page.getByRole("heading", { name: "Share board" })).toBeVisible();
+  await page.getByRole("button", { name: /Editor/ }).click();
+
+  await expect(
+    page.getByText(
+      `http://127.0.0.1:5173/join/${createdBoard.inviteCode.code}?role=editor`,
+    ),
+  ).toBeVisible();
+});
+
+test("user can join a board using an editor invitation", async ({ page }) => {
+  let inviteRole: string | null = null;
+  await mockAuthenticatedDashboard(page);
+  await page.route("**/api/room/join/**", async (route) => {
+    inviteRole = new URL(route.request().url()).searchParams.get("role");
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ data: { updatedRoom: createdBoard } }),
+    });
+  });
+  await page.route(`**/api/room/${createdBoard._id}`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ data: createdBoard }),
+    });
+  });
+  await page.route("**/api/elements/**", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.goto(`/join/${createdBoard.inviteCode.code}?role=editor`);
+  await page.getByRole("button", { name: "Join Room" }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/canvas/${createdBoard._id}$`));
+  await expect(
+    page.getByRole("button", { name: createdBoard.name }),
+  ).toBeVisible();
+  expect(inviteRole).toBe("editor");
 });
