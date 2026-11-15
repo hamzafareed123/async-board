@@ -32,7 +32,7 @@ export const DashboardPage = () => {
     setModalStatus("created");
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading && modalStatus === "closed") return <div>Loading...</div>;
 
   return (
     <main className="min-h-screen bg-background">

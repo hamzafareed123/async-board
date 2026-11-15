@@ -85,10 +85,9 @@ export const useRoomStore = create<IRoomStore>((set) => ({
         try {
             const response = await roomServices.joinRoom(code,role);
             console.log("Response is ", response)
-            const room = response.data;
-            console.log("Room Data is ", room)
-            set({ room });
-            return room;
+            const joinedRoom: IJoinRoomResponse = response.data;
+            set({ room: joinedRoom.updatedRoom });
+            return joinedRoom;
         } finally {
             set({ isLoading: false });
         }
