@@ -13,6 +13,7 @@ export const roomRepository = {
             members: [{ userId, role: "owner" }],
             inviteCode: {
                 code: data.inviteCode,
+                editorCode: data.editorCode,
                 maxMembers: data.maxMembers ?? null,
                 expiresAt: data.expiresAt ?? null,
             }
@@ -26,12 +27,24 @@ export const roomRepository = {
         })
     },
 
+    async setEditorInviteCodeIfMissing(room_id: string, code: string) {
+        const room = await Room.findOneAndUpdate(
+            { _id: room_id, "inviteCode.editorCode": { $exists: false } },
+            { $set: { "inviteCode.editorCode": code } },
+            { returnDocument: "after" },
+        );
+        return room?.inviteCode.editorCode;
+    },
+
     async deleteRoom(room_id: string) {
         await Room.findByIdAndDelete(room_id)
     },
 
     async findRoomByCode(room_code: string) {
-        return await Room.findOne({ 'inviteCode.code': room_code })
+        return await Room.findOne({ $or: [
+            { 'inviteCode.code': room_code },
+            { 'inviteCode.editorCode': room_code },
+        ] })
     },
 
     async joinRoom(user_id: string, room_id: string, role: "editor" | "viewer" = "viewer") {
@@ -62,11 +75,12 @@ export const roomRepository = {
     async getUserRooms(userId: string) {
         return await Room.find({
             "members.userId": userId
-        }).sort({ createdAt: -1 });
+        }).populate({ path: "members.userId", select: "fullName profilePic" })
+            .select("-inviteCode.editorCode").sort({ createdAt: -1 });
     },
 
     async getRoomById(roomId: string) {
-        return await Room.findById(roomId);
+        return await Room.findById(roomId).select("-inviteCode.editorCode");
     }
 }
 

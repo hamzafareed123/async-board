@@ -18,7 +18,7 @@ const CanvasPage = () => {
 
   useEffect(() => {
     if (roomId) getRoomById(roomId);
-  }, [roomId]);
+  }, [roomId, getRoomById]);
 
   useEffect(() => {
     if (roomId) {
@@ -45,7 +45,7 @@ const CanvasPage = () => {
             roomName={room?.name || ""}
             roomId={roomId || ""}
             onlineMembers={onlineMembers}
-            onExport={() => {}}
+            onExport={() => window.dispatchEvent(new Event("board:export"))}
         
           />
         </div>

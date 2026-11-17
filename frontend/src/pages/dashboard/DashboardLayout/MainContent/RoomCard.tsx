@@ -18,7 +18,7 @@ interface RoomCardProps {
 
 const RoomCard = ({ room, onDelete, onClick, currentUserId }: RoomCardProps) => {
   const isOwner = room.members.some(
-    (member) => member.userId?._id === currentUserId && member.role === "owner",
+    (member) => (typeof member.userId === "string" ? member.userId : member.userId?._id) === currentUserId && member.role === "owner",
   );
   const membersToShow = room.members.slice(0, 3);
   const remainingMembers = room.members.length - membersToShow.length;
@@ -36,13 +36,13 @@ const RoomCard = ({ room, onDelete, onClick, currentUserId }: RoomCardProps) => 
   return (
     <article
       onClick={onClick}
-      className={`group cursor-pointer relative flex flex-col overflow-hidden  border border-border bg-surface p-4 shadow-sm transition-all duration-200 ${
+      className={`group cursor-pointer relative flex min-h-52 flex-col overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-sm transition-all duration-200 ${
         onClick
           ? "cursor-pointer hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg"
           : "hover:border-primary/30 hover:shadow-md"
       }`}
     >
-      <div className="absolute inset-x-0 top-0 h-1 " />
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/80 via-primary/35 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-light text-primary">
@@ -52,7 +52,7 @@ const RoomCard = ({ room, onDelete, onClick, currentUserId }: RoomCardProps) => 
           <button
             type="button"
             onClick={handleDelete}
-            className="rounded-xl p-2 text-text-muted opacity-0 transition hover:bg-red-50 hover:text-error focus:opacity-100 group-hover:opacity-100"
+            className="rounded-xl p-2 text-text-muted transition hover:bg-red-50 hover:text-error sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
             aria-label={`Delete ${room.name}`}
           >
             <Trash2 size={16} />
@@ -91,8 +91,9 @@ const RoomCard = ({ room, onDelete, onClick, currentUserId }: RoomCardProps) => 
         <div className="shrink-0 text-right">
           <div className="flex -space-x-2">
             {membersToShow.map((member) => {
-              const memberName = member.userId?.fullName || "Member";
-              const profilePic = member.userId?.profilePic;
+              const memberDetails = typeof member.userId === "string" ? undefined : member.userId;
+              const memberName = memberDetails?.fullName || "Member";
+              const profilePic = memberDetails?.profilePic;
 
               return (
                 <div

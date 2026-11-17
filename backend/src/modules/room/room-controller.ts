@@ -91,3 +91,15 @@ export const getRoomById = async (req: Request, res: Response, next: NextFunctio
     }
 }
 
+export const getEditorInviteCode = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = (req.user as any).id;
+        const roomId = req.params.room_id as string;
+        const editorCode = await roomServices.getEditorInviteCode(userId, roomId);
+        (res as any).result = { data: { editorCode }, message: SUCCESS_MESSAGE.ROOM_FETCHED };
+        OutputHandler(STATUS_CODE.OK, req, res, next);
+    } catch (error) {
+        next(error);
+    }
+};
+

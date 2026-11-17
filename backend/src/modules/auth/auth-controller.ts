@@ -60,7 +60,9 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
 
         res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: ENV.isProduction
+            secure: ENV.isProduction,
+            sameSite: "lax",
+            path: "/api/auth",
         });
 
         (res as any).result = {
@@ -78,8 +80,6 @@ export const forgotPassoword = async (req: Request, res: Response, next: NextFun
         const data: IForgotPasswordDTO = req.body;
 
         const userId = await authServices.forgotPassword(data);
-
-        console.log("userid", userId);
 
         (res as any).result = { data: userId, message: SUCCESS_MESSAGE.OTP_SENT };
         OutputHandler(STATUS_CODE.OK, req, res, next);

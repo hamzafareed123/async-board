@@ -23,6 +23,8 @@ export const generateRefreshToken = async(
     res.cookie("refreshToken", token, {
         httpOnly: true,
         secure: ENV.isProduction,
+        sameSite: "lax",
+        path: "/api/auth",
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
     return token;

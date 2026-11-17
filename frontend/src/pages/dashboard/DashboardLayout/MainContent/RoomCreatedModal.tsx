@@ -15,8 +15,6 @@ const RoomCreatedModal = ({
 }: RoomCreatedModalProps) => {
   const [copied, setCopied] = useState(false);
 
-  console.log(inviteLink);
-
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(inviteLink);

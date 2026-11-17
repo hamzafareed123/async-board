@@ -1,22 +1,44 @@
 import { useState } from "react";
 import { Copy, Check, X, Users, Pencil, Eye } from "lucide-react";
 import { useRoomStore } from "../../../../store/room-store";
+import { roomServices } from "../../../../services/room-services";
 
 interface ShareModalProps {
     isOpen: boolean;
     onClose: () => void;
+    canInviteEditors: boolean;
 }
 
 type Role = "editor" | "viewer";
 
-const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
+const ShareModal = ({ isOpen, onClose, canInviteEditors }: ShareModalProps) => {
     const { room } = useRoomStore();
     const [selectedRole, setSelectedRole] = useState<Role>("viewer");
     const [copied, setCopied] = useState(false);
+    const [editorCode, setEditorCode] = useState<string | null>(null);
+    const [loadingEditorCode, setLoadingEditorCode] = useState(false);
 
     if (!isOpen) return null;
 
-    const inviteLink = `${window.location.origin}/join/${room?.inviteCode?.code}?role=${selectedRole}`;
+    const inviteCode = selectedRole === "editor"
+        ? editorCode
+        : room?.inviteCode?.code;
+    const inviteLink = inviteCode
+        ? `${window.location.origin}/join/${inviteCode}?role=${selectedRole}`
+        : "";
+
+    const selectRole = async (role: Role) => {
+        setSelectedRole(role);
+        if (role !== "editor" || !room?._id || editorCode) return;
+        setLoadingEditorCode(true);
+        try {
+            setEditorCode(await roomServices.getEditorInviteCode(room._id));
+        } catch (error) {
+            console.error("Could not create editor invite", error);
+        } finally {
+            setLoadingEditorCode(false);
+        }
+    };
 
     const handleCopy = async () => {
         try {
@@ -68,9 +90,11 @@ const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
                 <div className="grid grid-cols-2 gap-2 mb-5">
                     {/* Editor */}
                     <button
-                        onClick={() => setSelectedRole("editor")}
+                        onClick={() => void selectRole("editor")}
+                        disabled={!canInviteEditors}
+                        title={!canInviteEditors ? "Only the board owner can create editor invites" : undefined}
                         className={`flex items-start gap-3 p-3 rounded-xl border
-                            transition text-left cursor-pointer
+                            transition text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
                             ${selectedRole === "editor"
                                 ? "border-primary bg-primary/5"
                                 : "border-border hover:border-border-focus hover:bg-surface-2"
@@ -100,7 +124,7 @@ const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
 
                     {/* Viewer */}
                     <button
-                        onClick={() => setSelectedRole("viewer")}
+                        onClick={() => void selectRole("viewer")}
                         className={`flex items-start gap-3 p-3 rounded-xl border
                             transition text-left cursor-pointer
                             ${selectedRole === "viewer"
@@ -140,18 +164,19 @@ const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
                 <div className="flex items-center gap-2 p-3 bg-surface-2
                     border border-border rounded-xl mb-4">
                     <p className="flex-1 text-xs text-text-secondary truncate font-mono">
-                        {inviteLink}
+                        {loadingEditorCode ? "Creating a secure editor link…" : inviteLink || "Select a role to create an invite link"}
                     </p>
                 </div>
 
                 {/* Copy button */}
                 <button
                     onClick={handleCopy}
+                    disabled={!inviteLink || loadingEditorCode}
                     className={`w-full flex items-center justify-center gap-2
                         h-9 rounded-xl cursor-pointer text-sm font-medium transition-all
                         ${copied
                             ? "bg-green-500 text-white"
-                            : "bg-primary text-white hover:bg-primary-hover"
+                            : "bg-primary text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                         }`}
                 >
                     {copied ? (

@@ -12,7 +12,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: [ENV.CLIENT_URL, "null", "*"],
+        origin: ENV.CLIENT_URL,
         methods: ["GET", "POST"],
         credentials: true
     }
@@ -22,8 +22,7 @@ io.use(async (socket: any, next) => {
     try {
         const token =
             socket.handshake.auth?.token
-            || socket.handshake.headers.authorization?.split("Bearer ")[1]
-            || socket.handshake.query.token as string;;
+            || socket.handshake.headers.authorization?.split("Bearer ")[1];
 
         if (!token) {
             return next(new Error(ERROR_MESSAGE.INVALID_TOKEN))

@@ -29,4 +29,8 @@ export const roomServices = {
         const response = await apiClient.get(`/api/room/${roomId}`);
         return response.data;
     },
+    getEditorInviteCode: async (roomId: string): Promise<string> => {
+        const response = await apiClient.post(`/api/room/${roomId}/editor-invite`);
+        return response.data.data.editorCode;
+    },
 }

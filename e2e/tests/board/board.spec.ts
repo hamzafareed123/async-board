@@ -20,6 +20,7 @@ const createdBoard = {
   ],
   inviteCode: {
     code: "board-code-123",
+    editorCode: "board-editor-code-123",
     maxMembers: 5,
     expiresAt: null,
   },
@@ -118,7 +119,6 @@ test("board card opens the board canvas", async ({ page }) => {
       body: JSON.stringify({ data: [] }),
     });
   });
-
   await page.goto("/dashboard");
   await page.getByRole("button", { name: "My boards" }).click();
   await page.getByRole("heading", { name: "Product planning board 3" }).click();
@@ -216,6 +216,12 @@ test("board owner can share an editor invitation from the canvas", async ({
       body: JSON.stringify({ data: createdBoard }),
     });
   });
+  await page.route(`**/api/room/${createdBoard._id}/editor-invite`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ data: { editorCode: createdBoard.inviteCode.editorCode } }),
+    });
+  });
   await page.route("**/api/elements/**", async (route) => {
     await route.fulfill({
       contentType: "application/json",
@@ -228,9 +234,10 @@ test("board owner can share an editor invitation from the canvas", async ({
   await expect(page.getByRole("heading", { name: "Share board" })).toBeVisible();
   await page.getByRole("button", { name: /Editor/ }).click();
 
+  const appOrigin = new URL(page.url()).origin;
   await expect(
     page.getByText(
-      `http://127.0.0.1:5173/join/${createdBoard.inviteCode.code}?role=editor`,
+      `${appOrigin}/join/${createdBoard.inviteCode.editorCode}?role=editor`,
     ),
   ).toBeVisible();
 });
@@ -258,7 +265,7 @@ test("user can join a board using an editor invitation", async ({ page }) => {
     });
   });
 
-  await page.goto(`/join/${createdBoard.inviteCode.code}?role=editor`);
+  await page.goto(`/join/${createdBoard.inviteCode.editorCode}?role=editor`);
   await page.getByRole("button", { name: "Join Room" }).click();
 
   await expect(page).toHaveURL(new RegExp(`/canvas/${createdBoard._id}$`));
@@ -266,4 +273,53 @@ test("user can join a board using an editor invitation", async ({ page }) => {
     page.getByRole("button", { name: createdBoard.name }),
   ).toBeVisible();
   expect(inviteRole).toBe("editor");
+});
+
+test("sticky notes save to the board and can be erased", async ({ page }) => {
+  let createdElement: Record<string, unknown> | undefined;
+  let deletedElementPath = "";
+  await mockAuthenticatedDashboard(page, [createdBoard]);
+  await page.route(`**/api/room/${createdBoard._id}`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ data: createdBoard }),
+    });
+  });
+  await page.route(`**/api/elements/${createdBoard._id}/elements`, async (route) => {
+    if (route.request().method() === "POST") {
+      createdElement = route.request().postDataJSON();
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({
+          data: {
+            _id: "sticky-db-id",
+            ...createdElement,
+          },
+        }),
+      });
+      return;
+    }
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ data: [] }) });
+  });
+  await page.route(`**/api/elements/${createdBoard._id}/elements/sticky-db-id`, async (route) => {
+    deletedElementPath = new URL(route.request().url()).pathname;
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ success: true, data: null }) });
+  });
+
+  await page.goto(`/canvas/${createdBoard._id}`);
+  await page.locator('button[title="Sticky"]').click();
+  await page.locator("canvas").first().click({ position: { x: 500, y: 300 } });
+  await page.getByRole("textbox", { name: "Sticky note text" }).fill("Ship the first version");
+  await page.getByRole("button", { name: "Add note" }).click();
+
+  await expect.poll(() => createdElement?.type).toBe("sticky");
+  expect(createdElement).toMatchObject({
+    type: "sticky",
+    text: "Ship the first version",
+    size: { width: 220, height: 160 },
+  });
+
+  await page.locator('button[title="Eraser"]').click();
+  await page.locator("canvas").first().click({ position: { x: 520, y: 320 } });
+  await expect.poll(() => deletedElementPath).toContain("sticky-db-id");
 });

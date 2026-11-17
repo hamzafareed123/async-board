@@ -7,10 +7,10 @@ test("visitor can open the landing page and navigate to login", async ({
 
   await expect(
     page.getByRole("heading", {
-      name: "Build, sketch, and collaborate in one shared board.",
+      name: "Make space for better ideas.",
     }),
   ).toBeVisible();
 
-  await page.getByRole("link", { name: "Log in" }).click();
+  await page.getByRole("banner").getByRole("link", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/login$/);
 });

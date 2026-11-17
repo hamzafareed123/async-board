@@ -44,8 +44,10 @@ const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
 
     if (!password) {
       newErrors.password = "Password is required";
-    } else if (isSignup && password.length < 5) {
-      newErrors.password = "Password must be at least 5 characters";
+    } else if (isSignup && password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (isSignup && password.length > 72) {
+      newErrors.password = "Password must be at most 72 characters";
     }
 
     if (isSignup && confirmPassword !== password) {
@@ -110,6 +112,7 @@ const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
           type="password"
           placeholder="••••••••"
           value={password}
+          maxLength={isSignup ? 72 : undefined}
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
         />

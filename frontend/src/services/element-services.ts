@@ -1,7 +1,8 @@
 import { apiClient } from "../config/axios";
+import type { CreateElementPayload, UpdateElementPayload } from "../types/canvas-types";
 
 export const elementServices = {
-    createElement: async (roomId: string, data: any) => {
+    createElement: async (roomId: string, data: CreateElementPayload) => {
         const response = await apiClient.post(
             `/api/elements/${roomId}/elements`, data
         );
@@ -15,7 +16,7 @@ export const elementServices = {
         return response.data;
     },
 
-    updateElement: async (roomId: string, elementId: string, data: any) => {
+    updateElement: async (roomId: string, elementId: string, data: UpdateElementPayload) => {
         const response = await apiClient.put(
             `/api/elements/${roomId}/elements/${elementId}`, data
         );

@@ -10,9 +10,10 @@ import { roomRepository } from "./room-repositories";
 export const roomServices = {
     async createRoom(userId: string, roomData: ICreateRoomDTO) {
 
-        const code = crypto.randomBytes(4).toString("hex");
+        const code = crypto.randomBytes(16).toString("hex");
+        const editorCode = crypto.randomBytes(16).toString("hex");
 
-        const room = await roomRepository.createRoom(userId, { ...roomData, inviteCode: code });
+        const room = await roomRepository.createRoom(userId, { ...roomData, inviteCode: code, editorCode });
 
         return {
             room,
@@ -41,6 +42,10 @@ export const roomServices = {
             throw new customError(ERROR_MESSAGE.ROOM_NOT_FOUND, STATUS_CODE.NOT_FOUND);
         }
 
+        if (role === "editor" && room.inviteCode.editorCode !== room_code) {
+            throw new customError(ERROR_MESSAGE.FORBIDDEN, STATUS_CODE.FORBIDDEN);
+        }
+
         if (room.inviteCode?.expiresAt && room.inviteCode.expiresAt < new Date()) {
             throw new customError(ERROR_MESSAGE.ROOM_EXPIRED, STATUS_CODE.NOT_FOUND)
         }
@@ -51,7 +56,11 @@ export const roomServices = {
 
         if (alreadyMember) {
             return {
-                updatedRoom: room,
+                updatedRoom: (() => {
+                    const safeRoom = room.toObject();
+                    delete safeRoom.inviteCode.editorCode;
+                    return safeRoom;
+                })(),
                 alreadyJoined: true,
             };
         }
@@ -65,8 +74,12 @@ export const roomServices = {
 
         const updatedRoom = await roomRepository.joinRoom(user_id, room.id,role);
 
+        const safeRoom = updatedRoom?.toObject();
+        if (!safeRoom) throw new customError(ERROR_MESSAGE.ROOM_NOT_FOUND, STATUS_CODE.NOT_FOUND);
+        if (safeRoom?.inviteCode) delete safeRoom.inviteCode.editorCode;
+
         return {
-            updatedRoom,
+            updatedRoom: safeRoom,
             alreadyJoined: false,
         };
     },
@@ -92,7 +105,20 @@ export const roomServices = {
         }
 
         return room;
-    }
+    },
+    async getEditorInviteCode(userId: string, roomId: string) {
+        const room = await roomRepository.findRoomByIdAndCreator(userId, roomId);
+        if (!room) throw new customError(ERROR_MESSAGE.FORBIDDEN, STATUS_CODE.FORBIDDEN);
+        if (room.inviteCode.editorCode) return room.inviteCode.editorCode;
+
+        const code = crypto.randomBytes(16).toString("hex");
+        const savedCode = await roomRepository.setEditorInviteCodeIfMissing(roomId, code);
+        if (savedCode) return savedCode;
+
+        const updatedRoom = await roomRepository.findRoomByIdAndCreator(userId, roomId);
+        if (updatedRoom?.inviteCode.editorCode) return updatedRoom.inviteCode.editorCode;
+        throw new customError(ERROR_MESSAGE.ROOM_NOT_FOUND, STATUS_CODE.NOT_FOUND);
+    },
 }
 
 

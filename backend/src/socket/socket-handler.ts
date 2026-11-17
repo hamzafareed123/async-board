@@ -1,151 +1,114 @@
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { roomRepository } from "../modules/room/room-repositories";
 import { ERROR_MESSAGE } from "../constants/error-message";
 import { STATUS_CODE } from "../constants/status-codes";
 import { SOCKET_EVENTS } from "./socket-events";
 
+type RoomEvent = { roomId?: unknown; [key: string]: unknown };
+
 export const registerSocketHandler = async (io: Server) => {
-    io.on(SOCKET_EVENTS.CONNECTION, async (socket) => {
-        console.log("user connected", socket.data.userId)
+  io.on(SOCKET_EVENTS.CONNECTION, (socket: Socket) => {
+    const userId = String(socket.data.userId);
 
-        socket.on(SOCKET_EVENTS.ROOM_JOIN, async (roomId: string) => {
-            const room = await roomRepository.findRoomById(roomId)
+    const authorizeRoom = async (roomId: unknown, write = false) => {
+      if (typeof roomId !== "string" || !roomId || !socket.rooms.has(roomId)) {
+        socket.emit(SOCKET_EVENTS.ERROR, ERROR_MESSAGE.FORBIDDEN, STATUS_CODE.FORBIDDEN);
+        return false;
+      }
+      const room = await roomRepository.findRoomById(roomId);
+      const member = room?.members.find((entry) => entry.userId.toString() === userId);
+      if (!member || (write && member.role !== "owner" && member.role !== "editor")) {
+        socket.emit(SOCKET_EVENTS.ERROR, ERROR_MESSAGE.FORBIDDEN, STATUS_CODE.FORBIDDEN);
+        return false;
+      }
+      return true;
+    };
 
-            if (!room) {
-                socket.emit(SOCKET_EVENTS.ERROR, ERROR_MESSAGE.ROOM_NOT_FOUND, STATUS_CODE.NOT_FOUND)
-                return
-            }
+    socket.on(SOCKET_EVENTS.ROOM_JOIN, async (roomId: unknown) => {
+      if (typeof roomId !== "string" || !roomId) return;
+      const room = await roomRepository.findRoomById(roomId);
+      if (!room) {
+        socket.emit(SOCKET_EVENTS.ERROR, ERROR_MESSAGE.ROOM_NOT_FOUND, STATUS_CODE.NOT_FOUND);
+        return;
+      }
+      const member = room.members.some((entry) => entry.userId.toString() === userId);
+      if (!member) {
+        socket.emit(SOCKET_EVENTS.ERROR, ERROR_MESSAGE.ROOM_MEMBER_NOT_FOUND, STATUS_CODE.FORBIDDEN);
+        return;
+      }
 
-            const isMember = room.members.find(u =>
-                u.userId.toString() === socket.data.userId.toString()
-            );
+      await socket.join(roomId);
+      const connectedSockets = await io.in(roomId).fetchSockets();
+      const onlineMembers = Array.from(new Map(connectedSockets.map((connectedSocket) => [
+        connectedSocket.data.userId,
+        {
+          userId: connectedSocket.data.userId,
+          fullName: connectedSocket.data.fullName,
+          profilePic: connectedSocket.data.profilePic,
+          cursorColor: connectedSocket.data.cursorColor,
+        },
+      ])).values());
 
-            if (!isMember) {
-                socket.emit(SOCKET_EVENTS.ERROR, ERROR_MESSAGE.ROOM_MEMBER_NOT_FOUND, STATUS_CODE.NOT_FOUND)
-                return
-            }
+      socket.emit(SOCKET_EVENTS.ROOM_JOINED, { roomId, members: onlineMembers });
+      socket.to(roomId).emit(SOCKET_EVENTS.USER_JOINED, {
+        userId,
+        fullName: socket.data.fullName,
+        profilePic: socket.data.profilePic,
+        cursorColor: socket.data.cursorColor,
+      });
+    });
 
-            socket.join(roomId)
+    socket.on(SOCKET_EVENTS.ROOM_LEAVE, async (roomId: unknown) => {
+      if (typeof roomId !== "string" || !socket.rooms.has(roomId)) return;
+      await socket.leave(roomId);
+      const connectedSockets = await io.in(roomId).fetchSockets();
+      if (!connectedSockets.some((connectedSocket) => connectedSocket.data.userId === userId)) {
+        socket.to(roomId).emit(SOCKET_EVENTS.USER_LEFT, { userId });
+      }
+    });
 
-            const connectedSockets = await io.in(roomId).fetchSockets();
-            const onlineMembers = Array.from(
-                new Map(
-                    connectedSockets.map((connectedSocket) => [
-                        connectedSocket.data.userId,
-                        {
-                            userId: connectedSocket.data.userId,
-                            fullName: connectedSocket.data.fullName,
-                            profilePic: connectedSocket.data.profilePic,
-                            cursorColor: connectedSocket.data.cursorColor,
-                        },
-                    ])
-                ).values()
-            );
+    socket.on(SOCKET_EVENTS.CURSOR_MOVE, async (data: RoomEvent) => {
+      if (!data || !(await authorizeRoom(data.roomId))) return;
+      const position = data.cursorPosition as { x?: unknown; y?: unknown } | undefined;
+      if (!position || typeof position.x !== "number" || typeof position.y !== "number" ||
+        !Number.isFinite(position.x) || !Number.isFinite(position.y)) return;
+      socket.to(data.roomId as string).emit(SOCKET_EVENTS.CURSOR_MOVED, {
+        userId, cursorPosition: position, fullName: socket.data.fullName, cursorColor: socket.data.cursorColor,
+      });
+    });
 
-            socket.emit(SOCKET_EVENTS.ROOM_JOINED, {
-                roomId,
-                members: onlineMembers,
-            });
+    const relayEditorEvent = (event: string, outputEvent: string, map: (data: RoomEvent) => object = (data) => data) => {
+      socket.on(event, async (data: RoomEvent) => {
+        if (!data || !(await authorizeRoom(data.roomId, true))) return;
+        socket.to(data.roomId as string).emit(outputEvent, { userId, ...map(data) });
+      });
+    };
 
+    relayEditorEvent(SOCKET_EVENTS.ELEMENT_CREATED, SOCKET_EVENTS.ELEMENT_CREATED);
+    relayEditorEvent(SOCKET_EVENTS.ELEMENT_PREVIEW, SOCKET_EVENTS.ELEMENT_PREVIEW);
+    relayEditorEvent(SOCKET_EVENTS.ELEMENT_PREVIEW_END, SOCKET_EVENTS.ELEMENT_PREVIEW_END);
+    relayEditorEvent(SOCKET_EVENTS.ELEMENT_UPDATE, SOCKET_EVENTS.ELEMENT_UPDATED);
+    relayEditorEvent(SOCKET_EVENTS.ELEMENT_DELETE, SOCKET_EVENTS.ELEMENT_DELETED);
 
+    socket.on(SOCKET_EVENTS.SNAPSHOT_RESTORE, async (data: RoomEvent) => {
+      if (!data || !(await authorizeRoom(data.roomId, true))) return;
+      const room = await roomRepository.findRoomById(data.roomId as string);
+      const member = room?.members.find((entry) => entry.userId.toString() === userId);
+      if (member?.role !== "owner") {
+        socket.emit(SOCKET_EVENTS.ERROR, ERROR_MESSAGE.FORBIDDEN, STATUS_CODE.FORBIDDEN);
+        return;
+      }
+      io.to(data.roomId as string).emit(SOCKET_EVENTS.SNAPSHOT_RESTORED, { userId, elements: data.elements });
+    });
 
-
-            socket.to(roomId).emit("user:joined", {
-                userId: socket.data.userId,
-                fullName: socket.data.fullName,
-                profilePic: socket.data.profilePic,
-                cursorColor: socket.data.cursorColor,
-            });
-
-        })
-
-        socket.on(SOCKET_EVENTS.ROOM_LEAVE, async (roomId: string) => {
-            socket.leave(roomId)
-            const connectedSockets = await io.in(roomId).fetchSockets();
-            const userIsStillConnected = connectedSockets.some(
-                (connectedSocket) => connectedSocket.data.userId === socket.data.userId
-            );
-
-            if (!userIsStillConnected) {
-                socket.to(roomId).emit(SOCKET_EVENTS.USER_LEFT, {
-                    userId: socket.data.userId
-                })
-            }
-        })
-
-
-        socket.on(SOCKET_EVENTS.CURSOR_MOVE, (data: { roomId: string, cursorPosition: { x: number, y: number }, fullName: string, cursorColor: string }) => {
-            socket.to(data.roomId).emit(SOCKET_EVENTS.CURSOR_MOVED, {
-                userId: socket.data.userId,
-                cursorPosition: data.cursorPosition,
-                fullName: socket.data.fullName,
-                cursorColor: socket.data.cursorColor
-            })
-        })
-
-        socket.on(SOCKET_EVENTS.ELEMENT_CREATED, (data: { roomId: string, element: any }) => {
-            socket.to(data.roomId).emit(SOCKET_EVENTS.ELEMENT_CREATED, {
-                userId: socket.data.userId,
-                element: data.element
-            })
-        })
-
-        socket.on(SOCKET_EVENTS.ELEMENT_PREVIEW, (data: { roomId: string, shape: any }) => {
-            socket.to(data.roomId).emit(SOCKET_EVENTS.ELEMENT_PREVIEW, {
-                userId: socket.data.userId,
-                shape: data.shape
-            })
-        })
-
-        socket.on(SOCKET_EVENTS.ELEMENT_PREVIEW_END, (data: { roomId: string, shapeId: string }) => {
-            socket.to(data.roomId).emit(SOCKET_EVENTS.ELEMENT_PREVIEW_END, {
-                userId: socket.data.userId,
-                shapeId: data.shapeId
-            })
-        })
-
-        socket.on(SOCKET_EVENTS.ELEMENT_UPDATE, (data: { roomId: string, elementId: string, change: any }) => {
-            socket.to(data.roomId).emit(SOCKET_EVENTS.ELEMENT_UPDATED, {
-                userId: socket.data.userId,
-                elementId: data.elementId,
-                change: data.change
-            })
-        })
-
-        socket.on(SOCKET_EVENTS.ELEMENT_DELETE, (data: { roomId: string, elementId: string }) => {
-            socket.to(data.roomId).emit(SOCKET_EVENTS.ELEMENT_DELETED, {
-                userId: socket.data.userId,
-                elementId: data.elementId
-            })
-        })
-
-        socket.on(SOCKET_EVENTS.SNAPSHOT_RESTORE, (data: { roomId: string, elements: any }) => {
-            io.to(data.roomId).emit(SOCKET_EVENTS.SNAPSHOT_RESTORED, {
-                userId: socket.data.userId,
-                elements: data.elements
-            })
-        })
-        socket.on("disconnecting", async () => {
-            console.log("user disconnected", socket.data.userId)
-            const roomIds = Array.from(socket.rooms).filter(
-                (roomId): roomId is string => typeof roomId === "string" && roomId !== socket.id
-            );
-
-            for (const roomId of roomIds) {
-                const connectedSockets = await io.in(roomId).fetchSockets();
-                const userIsStillConnected = connectedSockets.some(
-                    (connectedSocket) =>
-                        connectedSocket.id !== socket.id &&
-                        connectedSocket.data.userId === socket.data.userId
-                );
-
-                if (!userIsStillConnected) {
-                    socket.to(roomId).emit(SOCKET_EVENTS.USER_LEFT, {
-                        userId: socket.data.userId
-                    })
-                }
-            }
-        })
-
-    })
-}
+    socket.on("disconnecting", async () => {
+      const roomIds = Array.from(socket.rooms).filter((roomId) => roomId !== socket.id);
+      for (const roomId of roomIds) {
+        const connectedSockets = await io.in(roomId).fetchSockets();
+        if (!connectedSockets.some((connectedSocket) => connectedSocket.id !== socket.id && connectedSocket.data.userId === userId)) {
+          socket.to(roomId).emit(SOCKET_EVENTS.USER_LEFT, { userId });
+        }
+      }
+    });
+  });
+};

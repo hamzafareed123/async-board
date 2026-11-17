@@ -18,7 +18,7 @@ export const DashboardPage = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [modalStatus, setModalStatus] = useState<ModalStatus>("closed");
-  const [activePanel, setActivePanel] = useState<string>("");
+  const [activePanel, setActivePanel] = useState<string>("boards");
 
   useEffect(() => {
     getRooms();

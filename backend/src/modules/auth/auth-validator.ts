@@ -1,5 +1,15 @@
 import Joi from "joi";
 
+const passwordSchema = () => Joi.string().min(8).max(72).custom((password, helpers) => {
+  if (Buffer.byteLength(password, "utf8") > 72) return helpers.error("string.max");
+  return password;
+}).messages({
+  "string.empty": "Password is required",
+  "string.min": "Password must be at least 8 characters",
+  "string.max": "Password must be at most 72 UTF-8 bytes",
+  "any.required": "Password is required",
+});
+
 export const signUpSchema = Joi.object({
   fullName: Joi.string().trim().required().messages({
     "string.empty": "Full Name is Required",
@@ -12,12 +22,7 @@ export const signUpSchema = Joi.object({
     "any.required": "Email is required",
   }),
 
-  password: Joi.string().min(4).max(15).required().messages({
-    "string.empty": "Password is required",
-    "string.min": "Password must be at least 4 characters",
-    "string.max": "Password must be at most  15 characters",
-    "any.required": "Password is required",
-  }),
+  password: passwordSchema().required(),
 });
 
 export const signInSchema = Joi.object({
@@ -48,12 +53,7 @@ export const resetPasswordSchema = Joi.object({
     "any.required": "Reset token is required",
   }),
 
-  password: Joi.string().min(4).max(15).required().messages({
-    "string.empty": "Password is Required",
-    "any.required": "Password is Required",
-    "string.min": "Password must be at least 4 characters",
-    "string.max": "Password must be at most  15 characters",
-  }),
+  password: passwordSchema().required(),
   confirmPassword: Joi.string().required().messages({
     "string.empty": "Confirm Password is Required",
     "any.required": "Confirm Password is Required",
@@ -65,7 +65,7 @@ export const verifyOtpSchema = Joi.object({
     "string.empty": "userId is required",
     "any.required": "userId is required",
   }),
-  otp: Joi.string().length(6).required().messages({
+  otp: Joi.string().length(6).pattern(/^\d{6}$/).required().messages({
     "string.empty": "OTP is required",
     "any.required": "OTP is required",
     "string.length": "OTP must be 6 digits",

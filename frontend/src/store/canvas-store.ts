@@ -1,14 +1,15 @@
 import { create } from "zustand";
 import { apiClient } from "../config/axios";
 import { transformToKonvaShape } from "../utils/transformElement";
+import type { CanvasElement } from "../types/canvas-types";
 
 interface ICanvasStore {
     activeTool: string;
     isLoading: boolean;
-    elements: any[];
+    elements: CanvasElement[];
     setActiveTool: (tool: string) => void;
-    addElement: (element: any) => void;
-    updateElement: (id: string, changes: any) => void;
+    addElement: (element: CanvasElement) => void;
+    updateElement: (id: string, changes: Partial<CanvasElement>) => void;
     deleteElement: (id: string) => void;
     loadElements: (roomId: string) => Promise<void>;
     clearElements: () => void;
@@ -23,7 +24,7 @@ export const useCanvasStore = create<ICanvasStore>((set) => ({
     updateElement: (id, changes) =>
         set((state) => ({
             elements: state.elements.map((element) =>
-                element.id === id ? { ...element, ...changes } : element
+                element.id === id ? { ...element, ...changes } as CanvasElement : element
             ),
         })),
     deleteElement: (id) => set((state) => ({ elements: state.elements.filter((element) => element.id !== id) })),
