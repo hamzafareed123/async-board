@@ -29,8 +29,12 @@ const ResetStep = ({ resetToken }: ResetStepProps) => {
       setPasswordError("Password is required");
       return;
     }
-    if (password.length < 5) {
-      setPasswordError("Password must be at least 5 characters");
+    if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters");
+      return;
+    }
+    if (password.length > 72) {
+      setPasswordError("Password must be at most 72 characters");
       return;
     }
     if (password !== confirmPassword) {
@@ -68,6 +72,7 @@ const ResetStep = ({ resetToken }: ResetStepProps) => {
           type="password"
           placeholder="••••••••"
           value={password}
+          maxLength={72}
           onChange={(e) => setPassword(e.target.value)}
           error={passwordError ?? undefined}
         />

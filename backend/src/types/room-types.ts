@@ -4,6 +4,7 @@ export interface ICreateRoomDTO {
     isPublic?: boolean;
     createdBy: string;
     inviteCode?: string;
+    editorCode?: string;
     maxMembers?: number;
     expiresAt?: Date;
 }

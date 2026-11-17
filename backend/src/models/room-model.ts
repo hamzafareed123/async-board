@@ -12,6 +12,7 @@ export interface IRoomDocument extends Document {
 
     inviteCode: {
         code: string;
+        editorCode?: string;
         maxMembers: number | null;
         expiresAt: Date | null;
     };
@@ -59,6 +60,11 @@ const roomSchema = new Schema<IRoomDocument>({
             type: String,
             required: true,
             unique: true
+        },
+
+        editorCode: {
+            type: String,
+            required: false,
         },
 
         maxMembers: {

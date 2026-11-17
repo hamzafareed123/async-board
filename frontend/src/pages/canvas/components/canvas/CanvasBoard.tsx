@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Stage, Layer, Rect, Line, Ellipse, Arrow, Text, Circle, Image as KonvaImage } from "react-konva";
+import React, { useState, useEffect, useRef } from "react";
+import { Stage, Layer, Rect, Line, Ellipse, Arrow, Text, Circle, Group, Image as KonvaImage } from "react-konva";
+import type Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { useCanvasStore } from "../../../../store/canvas-store";
 import { elementServices } from "../../../../services/element-services";
 import { socket } from "../../../../config/socket";
-import { transformToApiShape } from "../../../../utils/transformElement";
+import { transformToApiShape, transformToKonvaShape } from "../../../../utils/transformElement";
+import { tools } from "../../../../data/ToolsData";
+import type { CanvasElement, CanvasShape } from "../../../../types/canvas-types";
 
 interface CanvasBoardProps {
   roomId: string;
@@ -18,22 +21,27 @@ interface CanvasBoardProps {
   };
 }
 const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
-  const { activeTool, elements, addElement, deleteElement, setActiveTool } = useCanvasStore();
+  const { activeTool, elements, addElement, updateElement, deleteElement, setActiveTool } = useCanvasStore();
 
   const [size, setSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  const stageRef = useRef<Konva.Stage | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const [currentShape, setCurrentShape] = useState<any>(null);
-  const [remotePreviews, setRemotePreviews] = useState<Record<string, any>>({});
+  const [currentShape, setCurrentShape] = useState<CanvasShape | null>(null);
+  const [remotePreviews, setRemotePreviews] = useState<Record<string, CanvasShape>>({});
   const [textInput, setTextInput] = useState<{
     x: number;
     y: number;
     visible: boolean;
     value: string;
+    kind: "text" | "sticky";
   } | null>(null);
+  const [exportError, setExportError] = useState(false);
+  const [canvasMessage, setCanvasMessage] = useState<string | null>(null);
+  const deletingIds = useRef(new Set<string>());
 
   useEffect(() => {
     const handleResize = () =>
@@ -44,6 +52,39 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const shortcuts = new Map(tools.filter((tool) => tool.label !== "Image").map((tool) => [tool.shortcut.toLowerCase(), tool.label]));
+    const handleShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (event.ctrlKey || event.metaKey || event.altKey || target?.isContentEditable ||
+        target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+      const tool = shortcuts.get(event.key.toLowerCase());
+      if (tool) {
+        event.preventDefault();
+        setActiveTool(tool);
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [setActiveTool]);
+
+  useEffect(() => {
+    const exportBoard = () => {
+      if (!stageRef.current) return;
+      try {
+        const anchor = document.createElement("a");
+        anchor.download = `${roomId || "syncboard"}-board.png`;
+        anchor.href = stageRef.current.toDataURL({ pixelRatio: 2, mimeType: "image/png" });
+        anchor.click();
+      } catch {
+        setExportError(true);
+        window.setTimeout(() => setExportError(false), 4000);
+      }
+    };
+    window.addEventListener("board:export", exportBoard);
+    return () => window.removeEventListener("board:export", exportBoard);
+  }, [roomId]);
 
   useEffect(() => {
     const addUploadedImage = ({ detail }: CustomEvent<{ src: string }>) => {
@@ -74,7 +115,7 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
   }, [addElement, setActiveTool, size.height, size.width]);
 
   useEffect(() => {
-    const handlePreview = (data: { shape: any }) => {
+    const handlePreview = (data: { shape: CanvasShape }) => {
       setRemotePreviews((previews) => ({
         ...previews,
         [data.shape.id]: data.shape,
@@ -82,7 +123,8 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
     };
     const handlePreviewEnd = (data: { shapeId: string }) => {
       setRemotePreviews((previews) => {
-        const { [data.shapeId]: _, ...remainingPreviews } = previews;
+        const remainingPreviews = { ...previews };
+        delete remainingPreviews[data.shapeId];
         return remainingPreviews;
       });
     };
@@ -96,27 +138,39 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
     };
   }, []);
 
-  const getPos = (e: any) => {
-    const stage = e.target.getStage();
-    return stage.getPointerPosition();
+  const getPos = (event: Konva.KonvaEventObject<MouseEvent>) => {
+    return event.target.getStage()?.getPointerPosition() ?? { x: 0, y: 0 };
   };
 
-  const handleMouseDown = (e: any) => {
-    if (activeTool === "Select") return;
+  const handleMouseDown = (event: Konva.KonvaEventObject<MouseEvent>) => {
+    if (activeTool === "Select" || activeTool === "Eraser") return;
 
     if (activeTool === "Text") {
-      const pos = getPos(e);
+      const pos = getPos(event);
 
       setTextInput({
         x: pos.x,
         y: pos.y,
         visible: true,
         value: "",
+        kind: "text",
       });
       return;
     }
 
-    const pos = getPos(e);
+    if (activeTool === "Sticky") {
+      const pos = getPos(event);
+      setTextInput({
+        x: pos.x,
+        y: pos.y,
+        visible: true,
+        value: "",
+        kind: "sticky",
+      });
+      return;
+    }
+
+    const pos = getPos(event);
     setIsDrawing(true);
     setStartPos(pos);
 
@@ -152,6 +206,8 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
       setCurrentShape({
         id: uuidv4(),
         type: "line",
+        x: pos.x,
+        y: pos.y,
         points: [pos.x, pos.y, pos.x, pos.y],
         fill: "transparent",
         stroke: "#6366F1",
@@ -162,6 +218,8 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
       setCurrentShape({
         id: uuidv4(),
         type: "arrow",
+        x: pos.x,
+        y: pos.y,
         points: [pos.x, pos.y, pos.x, pos.y],
         pointerLength: 20,
         pointerWidth: 20,
@@ -174,6 +232,8 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
       setCurrentShape({
         id: uuidv4(),
         type: "pen",
+        x: pos.x,
+        y: pos.y,
         points: [pos.x, pos.y],
         pointerLength: 20,
         pointerWidth: 20,
@@ -187,13 +247,14 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
     }
   };
 
-  const handleMouseMove = (e: any) => {
+  const handleMouseMove = (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (!isDrawing || !currentShape) return;
 
-    const pos = getPos(e);
+    const pos = getPos(event);
 
     if (activeTool === "Rectangle") {
-      setCurrentShape((prev: any) => {
+      setCurrentShape((prev) => {
+        if (!prev) return prev;
         const nextShape = {
           ...prev,
           width: pos.x - startPos.x,
@@ -205,7 +266,8 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
     }
 
     if (activeTool === "Circle") {
-      setCurrentShape((prev: any) => {
+      setCurrentShape((prev) => {
+        if (!prev) return prev;
         const nextShape = {
           ...prev,
           radiusX: Math.abs(pos.x - startPos.x) / 2,
@@ -217,30 +279,35 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
     }
 
     if (activeTool === "Line") {
-      setCurrentShape((prev: any) => {
+      setCurrentShape((prev) => {
+        if (!prev) return prev;
+        const points = prev.points ?? [];
         const nextShape = {
           ...prev,
-          points: [prev.points[0], prev.points[1], pos.x, pos.y],
+          points: [points[0] ?? 0, points[1] ?? 0, pos.x, pos.y],
         };
         socket.emit("element:preview", { roomId, shape: nextShape });
         return nextShape;
       });
     }
     if (activeTool === "Arrow") {
-      setCurrentShape((prev: any) => {
+      setCurrentShape((prev) => {
+        if (!prev) return prev;
+        const points = prev.points ?? [];
         const nextShape = {
           ...prev,
-          points: [prev.points[0], prev.points[1], pos.x, pos.y],
+          points: [points[0] ?? 0, points[1] ?? 0, pos.x, pos.y],
         };
         socket.emit("element:preview", { roomId, shape: nextShape });
         return nextShape;
       });
     }
     if (activeTool === "Pen") {
-      setCurrentShape((prev: any) => {
+      setCurrentShape((prev) => {
+        if (!prev) return prev;
         const nextShape = {
           ...prev,
-          points: [...prev.points, pos.x, pos.y],
+          points: [...(prev.points ?? []), pos.x, pos.y],
         };
         socket.emit("element:preview", { roomId, shape: nextShape });
         return nextShape;
@@ -248,12 +315,10 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
     }
   };
 
-  const handleMouseUp = async () => {
+  const handleMouseUp = async (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (!isDrawing || !currentShape) return;
 
-    const pos = getPos({
-      target: { getStage: () => ({ getPointerPosition: () => startPos }) },
-    });
+    const pos = getPos(event);
 
     socket.emit("cursor:move", {
       roomId,
@@ -262,41 +327,88 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
 
     socket.emit("element:preview:end", { roomId, shapeId: currentShape.id });
 
-    // save to store
-    addElement(currentShape);
-
     // clear live shape
     setCurrentShape(null);
     setIsDrawing(false);
-    try {
-      // save to DB
-      const elementData = transformToApiShape(currentShape);
-      const response = await elementServices.createElement(roomId, elementData);
+    await saveElement(currentShape);
+  };
 
-      // emit socket with DB element (has real _id)
-      socket.emit("element:created", {
-        roomId,
-        element: response.data,
-      });
+  const saveElement = async (shape: CanvasShape) => {
+    addElement(shape);
+    setCanvasMessage(null);
+    try {
+      const response = await elementServices.createElement(roomId, transformToApiShape(shape));
+      deleteElement(shape.id);
+      addElement(transformToKonvaShape(response.data));
+      socket.emit("element:created", { roomId, element: response.data });
     } catch (error) {
-      console.log("failed to save element:", error);
+      deleteElement(shape.id);
+      setCanvasMessage("Could not save that item. Check your connection and try again.");
+      console.error("Failed to save canvas element:", error);
     }
   };
 
-  const renderElement = (el: any) => {
+  const handleEraserElement = async (id: string) => {
+    if (activeTool !== "Eraser" || deletingIds.current.has(id)) return;
+    const element = elements.find((item) => item.id === id);
+    if (!element) return;
+
+    if (element.type === "image") {
+      deleteElement(id);
+      return;
+    }
+
+    deletingIds.current.add(id);
+    deleteElement(id);
+    setCanvasMessage(null);
+    try {
+      await elementServices.deleteElement(roomId, id);
+      socket.emit("element:delete", { roomId, elementId: id });
+    } catch (error) {
+      addElement(element);
+      setCanvasMessage("Could not erase that item. Check your connection and try again.");
+      console.error("Failed to delete canvas element:", error);
+    } finally {
+      deletingIds.current.delete(id);
+    }
+  };
+
+  const eraseOnMouseDown = (id: string) => (event: Konva.KonvaEventObject<MouseEvent>) => {
+    if (activeTool !== "Eraser") return;
+    event.cancelBubble = true;
+    void handleEraserElement(id);
+  };
+
+  const handleStickyDragEnd = async (id: string, event: Konva.KonvaEventObject<DragEvent>) => {
+    const position = { x: event.target.x(), y: event.target.y() };
+    const previous = elements.find((element) => element.id === id);
+    if (!previous) return;
+    updateElement(id, position);
+    try {
+      await elementServices.updateElement(roomId, id, { position });
+      socket.emit("element:update", { roomId, elementId: id, change: { position } });
+    } catch (error) {
+      updateElement(id, { x: previous.x, y: previous.y });
+      event.target.position(previous);
+      setCanvasMessage("Could not move that note. Check your connection and try again.");
+      console.error("Failed to move sticky note:", error);
+    }
+  };
+
+  const renderElement = (el: CanvasElement) => {
     if (el.type === "rect") {
       return (
         <Rect
           key={el.id}
           x={el.x}
           y={el.y}
-          width={el.width}
-          height={el.height}
+          width={el.width ?? 0}
+          height={el.height ?? 0}
           fill={el.fill}
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
           draggable={activeTool === "Select"}
-          onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={eraseOnMouseDown(el.id)}
         />
       );
     }
@@ -306,13 +418,13 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
           key={el.id}
           x={el.x}
           y={el.y}
-          radiusX={el.radiusX}
-          radiusY={el.radiusY}
+          radiusX={el.radiusX ?? 0}
+          radiusY={el.radiusY ?? 0}
           fill={el.fill}
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
           draggable={activeTool === "Select"}
-          onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={eraseOnMouseDown(el.id)}
         />
       );
     }
@@ -320,14 +432,15 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
       return (
         <Line
           key={el.id}
-          points={el.points}
+          points={el.points ?? []}
           fill={el.fill}
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
+          hitStrokeWidth={Math.max(el.strokeWidth || 2, 12)}
           lineCap="round"
           lineJoin="round"
           draggable={activeTool === "Select"}
-          onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={eraseOnMouseDown(el.id)}
         />
       );
     }
@@ -335,14 +448,15 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
       return (
         <Arrow
           key={el.id}
-          points={el.points}
+          points={el.points ?? []}
           pointerLength={el.pointerLength}
           pointerWidth={el.pointerWidth}
           fill={el.fill}
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
+          hitStrokeWidth={Math.max(el.strokeWidth || 2, 12)}
           draggable={activeTool === "Select"}
-          onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={eraseOnMouseDown(el.id)}
         />
       );
     }
@@ -351,14 +465,15 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
       return (
         <Line
           key={el.id}
-          points={el.points}
+          points={el.points ?? []}
           stroke={el.stroke}
           strokeWidth={el.strokeWidth}
+          hitStrokeWidth={Math.max(el.strokeWidth || 2, 12)}
           tension={0.5}
           lineCap="round"
           lineJoin="round"
           draggable={activeTool === "Select"}
-          onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={eraseOnMouseDown(el.id)}
         />
       );
     }
@@ -373,13 +488,52 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
           fill={el.fill}
           offsetX={el.offsetX}
           draggable={activeTool === "Select"}
-          onMouseDown={() => handleEraserElement(el.id)}
+          onMouseDown={eraseOnMouseDown(el.id)}
         />
       );
     }
 
+    if (el.type === "sticky") {
+      return (
+        <React.Fragment key={el.id}>
+          <Group
+            x={el.x}
+            y={el.y}
+            draggable={activeTool === "Select"}
+            onMouseDown={eraseOnMouseDown(el.id)}
+            onDragEnd={(event) => void handleStickyDragEnd(el.id, event)}
+          >
+            <Rect
+              width={el.width}
+              height={el.height}
+              fill={el.fill || "#FEF3C7"}
+              stroke="#E9C46A"
+              strokeWidth={1}
+              cornerRadius={8}
+              shadowColor="#483A1A"
+              shadowBlur={8}
+              shadowOpacity={0.12}
+              shadowOffsetY={3}
+            />
+            <Text
+              x={14}
+              y={14}
+          width={Math.max(0, (el.width ?? 0) - 28)}
+          height={Math.max(0, (el.height ?? 0) - 28)}
+              text={el.text || ""}
+              fontFamily={el.fontFamily || "Inter"}
+              fontSize={el.fontSize || 16}
+              fill="#514322"
+              wrap="word"
+              listening={false}
+            />
+          </Group>
+        </React.Fragment>
+      );
+    }
+
     if (el.type === "image") {
-      return <BoardImage key={el.id} element={el} draggable={activeTool === "Select"} onMouseDown={() => handleEraserElement(el.id)} />;
+      return <BoardImage key={el.id} element={el} draggable={activeTool === "Select"} onMouseDown={eraseOnMouseDown(el.id)} />;
     }
 
     return null;
@@ -393,40 +547,21 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
 
     const textShape = {
       id: uuidv4(),
-      type: "text",
+      type: textInput.kind,
       x: textInput.x,
       y: textInput.y,
       text: textInput.value,
-      fontSize: 20,
+      width: textInput.kind === "sticky" ? 220 : 0,
+      height: textInput.kind === "sticky" ? 160 : 0,
+      fontSize: textInput.kind === "sticky" ? 16 : 20,
       fontFamily: "Inter",
-      fill: "#111827",
+      fill: textInput.kind === "sticky" ? "#FEF3C7" : "#111827",
+      stroke: textInput.kind === "sticky" ? "#E9C46A" : "#111827",
+      strokeWidth: 1,
     };
 
-    addElement(textShape);
     setTextInput(null);
-
-    try {
-      const elementData = transformToApiShape(textShape);
-      const response = await elementServices.createElement(roomId, elementData);
-      socket.emit("element:created", {
-        roomId,
-        element: response.data,
-      });
-    } catch (error) {
-      console.log("failed to save text:", error);
-    }
-  };
-
-  const handleEraserElement = async (id: string) => {
-    if (activeTool !== "Eraser") return;
-
-    try {
-      await elementServices.deleteElement(roomId, id);
-      deleteElement(id);
-      socket.emit("element:delete", { roomId, elementId: id });
-    } catch (error) {
-      console.log("failed to delete element:", error);
-    }
+    await saveElement(textShape);
   };
 
   return (
@@ -443,6 +578,7 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
       }}
     >
       <Stage
+        ref={stageRef}
         width={size.width}
         height={size.height}
         style={{ background: "transparent" }}
@@ -451,6 +587,7 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
         onMouseUp={handleMouseUp}
       >
         <Layer>
+          <Rect width={size.width} height={size.height} fill="#FAFAFA" listening={false} />
           {/* saved elements */}
           {elements.map(renderElement)}
           {Object.entries(cursors).map(([userId, cursor]) => (
@@ -494,8 +631,8 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
             <Ellipse
               x={currentShape.x}
               y={currentShape.y}
-              radiusX={currentShape.radiusX}
-              radiusY={currentShape.radiusY}
+              radiusX={currentShape.radiusX ?? 0}
+              radiusY={currentShape.radiusY ?? 0}
               fill={currentShape.fill}
               stroke={currentShape.stroke}
               strokeWidth={currentShape.strokeWidth}
@@ -503,7 +640,7 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
           )}
           {currentShape && currentShape.type === "line" && (
             <Line
-              points={currentShape.points}
+              points={currentShape.points ?? []}
               fill={currentShape.fill}
               stroke={currentShape.stroke}
               strokeWidth={currentShape.strokeWidth}
@@ -514,7 +651,7 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
 
           {currentShape && currentShape.type === "arrow" && (
             <Arrow
-              points={currentShape.points}
+              points={currentShape.points ?? []}
               pointerWidth={currentShape.pointerWidth}
               pointerLength={currentShape.pointerLength}
               fill={currentShape.fill}
@@ -524,7 +661,7 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
           )}
           {currentShape && currentShape.type === "pen" && (
             <Line
-              points={currentShape.points}
+              points={currentShape.points ?? []}
               stroke={currentShape.stroke}
               strokeWidth={currentShape.strokeWidth}
               tension={0.5}
@@ -546,36 +683,60 @@ const CanvasBoard = ({ roomId, cursors }: CanvasBoardProps) => {
         </Layer>
       </Stage>
       {textInput?.visible && (
-        <input
-          autoFocus
-          type="text"
-          value={textInput.value}
-          onChange={(e) =>
-            setTextInput((prev) =>
-              prev ? { ...prev, value: e.target.value } : null,
-            )
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter") saveText();
-            if (e.key === "Escape") setTextInput(null);
-          }}
-          style={{
-            position: "absolute",
-            top: textInput.y,
-            left: textInput.x,
-            background: "white",
-            border: "1.5px dashed #6366F1",
-            borderRadius: "4px",
-            outline: "none",
-            fontSize: "20px",
-            fontFamily: "Inter",
-            color: "#111827",
-            minWidth: "120px",
-            padding: "4px 8px",
-            zIndex: 9999,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          }}
-        />
+        <>
+          {textInput.kind === "sticky" ? (
+            <div style={{ position: "absolute", top: textInput.y, left: textInput.x, width: 220, zIndex: 9999, border: "1px solid #E9C46A", borderRadius: 8, background: "#FEF3C7", boxShadow: "0 8px 18px rgba(72,58,26,.15)" }}>
+              <textarea
+                autoFocus
+                aria-label="Sticky note text"
+                placeholder="Write a note…"
+                value={textInput.value}
+                onChange={(event) => setTextInput((previous) => previous ? { ...previous, value: event.target.value } : null)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    void saveText();
+                  }
+                  if (event.key === "Escape") setTextInput(null);
+                }}
+                style={{ display: "block", boxSizing: "border-box", width: "100%", height: 124, resize: "none", border: 0, borderRadius: "8px 8px 0 0", outline: "none", background: "transparent", fontSize: 16, lineHeight: 1.45, fontFamily: "Inter", color: "#514322", padding: 14 }}
+              />
+              <div className="flex items-center justify-between border-t border-amber-200 px-2 py-1.5">
+                <span className="px-1 text-[10px] text-amber-800">Ctrl + Enter to save</span>
+                <button type="button" onClick={() => void saveText()} className="rounded-md bg-amber-800 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-amber-900">Add note</button>
+              </div>
+            </div>
+          ) : (
+            <input
+              autoFocus
+              type="text"
+              aria-label="Canvas text"
+              value={textInput.value}
+              onChange={(event) => setTextInput((previous) => previous ? { ...previous, value: event.target.value } : null)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") void saveText();
+                if (event.key === "Escape") setTextInput(null);
+              }}
+              style={{
+                position: "absolute", top: textInput.y, left: textInput.x, background: "white",
+                border: "1.5px dashed #6366F1", borderRadius: 4, outline: "none", fontSize: 20,
+                fontFamily: "Inter", color: "#111827", minWidth: 120, padding: "4px 8px", zIndex: 9999,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+            />
+          )}
+        </>
+      )}
+      {canvasMessage && (
+        <div role="alert" className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-amber-200 bg-white px-4 py-3 text-sm text-amber-800 shadow-lg">
+          <span>{canvasMessage}</span>
+          <button type="button" onClick={() => setCanvasMessage(null)} aria-label="Dismiss message" className="font-semibold text-amber-900">×</button>
+        </div>
+      )}
+      {exportError && (
+        <div role="status" className="absolute bottom-5 left-1/2 z-20 -translate-x-1/2 rounded-xl border border-amber-200 bg-white px-4 py-3 text-sm text-amber-800 shadow-lg">
+          One of the images on this board can’t be exported. Remove it and try again.
+        </div>
       )}
     </div>
   );
@@ -586,14 +747,15 @@ const BoardImage = ({
   draggable,
   onMouseDown,
 }: {
-  element: any;
+  element: CanvasElement & { type: "image" };
   draggable: boolean;
-  onMouseDown: () => void;
+  onMouseDown: (event: Konva.KonvaEventObject<MouseEvent>) => void;
 }) => {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
 
   useEffect(() => {
     const loadedImage = new window.Image();
+    loadedImage.crossOrigin = "Anonymous";
     loadedImage.onload = () => setImage(loadedImage);
     loadedImage.src = element.src;
   }, [element.src]);

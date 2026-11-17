@@ -7,9 +7,10 @@ interface FormInputProps {
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   error?: string
+  maxLength?: number
 }
 
-const FormInput = ({ label, type, placeholder, value, onChange, error }: FormInputProps) => {
+const FormInput = ({ label, type, placeholder, value, onChange, error, maxLength }: FormInputProps) => {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium text-text-primary">{label}</label>
@@ -18,6 +19,7 @@ const FormInput = ({ label, type, placeholder, value, onChange, error }: FormInp
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        maxLength={maxLength}
         className={`w-full rounded-xl border bg-surface px-3.5 py-3 text-sm text-text-primary shadow-sm outline-none transition
           placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15
           ${error ? 'border-error' : 'border-border'}`}

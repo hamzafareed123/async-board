@@ -165,6 +165,8 @@ test("user can complete the forgot password reset flow", async ({ page }) => {
   await mockForgotPasswordFlow(page);
   await page.goto("/login");
   await page.getByRole("link", { name: "Forgot password?" }).click();
+  await expect(page).toHaveURL(/\/forgot-password$/);
+  await expect(page.getByRole("heading", { name: "Forgot password?" })).toBeVisible();
 
   await page.getByPlaceholder("you@example.com").fill(testUser.email);
   await page.getByRole("button", { name: "Send OTP" }).click();

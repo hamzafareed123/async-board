@@ -6,6 +6,7 @@ export interface IRoom {
     members: IMember[];
     inviteCode: {
         code: string;
+        editorCode?: string;
         maxMembers: number | null;
         expiresAt: Date | null;
     };
@@ -16,7 +17,7 @@ export interface IRoom {
 }
 
 export interface IMember {
-    userId: {
+    userId: string | {
         _id: string;
         fullName: string;
         profilePic?: string;

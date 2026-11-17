@@ -69,10 +69,10 @@ const CanvasHeader = ({
           {/* Brand */}
           <div className="flex items-center gap-1.5 shrink-0">
             <div className="w-5 h-5 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-white text-[9px] font-bold">AB</span>
+              <span className="text-white text-[9px] font-bold">SB</span>
             </div>
             <span className="text-xs font-semibold text-gray-800 hidden sm:block">
-              Async Board
+              SyncBoard
             </span>
           </div>
 
@@ -140,7 +140,7 @@ const CanvasHeader = ({
                 hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer"
           >
             <Download size={12} />
-            <span className="hidden sm:block">Export</span>
+            <span className="hidden sm:block">Export PNG</span>
           </button>
 
           <button
@@ -172,6 +172,7 @@ const CanvasHeader = ({
       <ShareModal
         isOpen={shareOpen}
         onClose={() => setShareOpen(false)}
+        canInviteEditors={currentUserRole === "owner"}
       />
       <SnapshotModal
         isOpen={historyOpen}

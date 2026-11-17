@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { socket } from "../config/socket";
 import { useCanvasStore } from "../store/canvas-store"
 import { transformToKonvaShape } from "../utils/transformElement"
+import type { OnlineMember } from "../types/canvas-types";
 
 export const useSocket = (roomId: string) => {
-    const [onlineMembers, setOnlineMembers] = useState<any[]>([]);
+    const [onlineMembers, setOnlineMembers] = useState<OnlineMember[]>([]);
     const [cursors, setCursors] = useState<{
         [userId: string]: {
             x: number;
@@ -17,6 +18,7 @@ export const useSocket = (roomId: string) => {
     useEffect(() => {
         if (!roomId) return;
 
+        socket.auth = { token: localStorage.getItem("accessToken") };
         socket.connect();
 
         socket.on("connect", () => {
@@ -48,6 +50,13 @@ export const useSocket = (roomId: string) => {
             console.log("element:deleted:", data)
             const { deleteElement } = useCanvasStore.getState();
             deleteElement(data.elementId);
+        })
+
+        socket.on("element:updated", (data) => {
+            const position = data.change?.position;
+            if (!position) return;
+            const { updateElement } = useCanvasStore.getState();
+            updateElement(data.elementId, { x: position.x, y: position.y });
         })
 
         socket.on("user:left", (data) => {
@@ -93,6 +102,7 @@ export const useSocket = (roomId: string) => {
             socket.off("user:joined");
             socket.off("element:created");
             socket.off("element:deleted");
+            socket.off("element:updated");
             socket.off("user:left");
             socket.off("error");
             socket.off("cursor:moved");
