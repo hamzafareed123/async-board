@@ -12,6 +12,7 @@ export const ENV = {
     REFRESH_TOKEN_SECRET_KEY: process.env.REFRESH_TOKEN_SECRET_KEY as string,
     REDIS_HOST: process.env.REDIS_HOST,
     REDIS_PORT: parseInt(process.env.REDIS_PORT || "6379"),
+    REDIS_PASSWORD:process.env.REDIS_PASSWORD as string,
     RESET_TOKEN_SECRET_KEY: process.env.RESET_TOKEN_SECRET_KEY as string,
     CLOUD_NAME: process.env.CLOUD_NAME as string,
     CLOUD_API_KEY: process.env.CLOUD_API_KEY as string,
