@@ -105,7 +105,7 @@ const CanvasHeader = ({
                 onClick={() => setIsEditing(true)}
                 className="flex items-center gap-1 text-sm font-medium
                     text-gray-800 px-2 py-0.5 rounded-md
-                    hover:bg-gray-100 transition-all truncate max-w-[180px] cursor-pointer"
+                    hover:bg-gray-100 transition-all truncate max-w-45 cursor-pointer"
                 title="Click to rename"
               >
                 <span className="truncate">{name || "Untitled"}</span>
