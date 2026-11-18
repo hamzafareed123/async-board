@@ -2,6 +2,8 @@
 
 Async Board is a shared online canvas for planning and sketching with a team. Create boards, invite people as viewers or editors, and work together on the same canvas.
 
+> **Hosting notice:** The live demo is hosted on a free tier. It may take up to a minute to start when the service has been idle.
+
 ## What you can do
 
 - Create public or private boards and manage invite links.

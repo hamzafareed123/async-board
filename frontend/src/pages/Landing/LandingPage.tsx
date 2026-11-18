@@ -39,6 +39,7 @@ const LandingPage = () => {
               <Link to="/signup" className="button button-dark">Create your first board <ArrowRight size={17} /></Link>
               <a className="button button-quiet" href="#features">See how it works <ArrowDown size={16} /></a>
             </div>
+            <p className="cold-start-note"><span aria-hidden="true">i</span><strong>Free-tier hosting</strong> — the app may take up to a minute to start after an idle period.</p>
             <div className="hero-proof"><div className="avatar-stack" aria-label="Team members"><img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Team member" /><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Team member" /><img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Team member" /></div><span>One canvas. Your whole team.</span></div>
           </div>
 
